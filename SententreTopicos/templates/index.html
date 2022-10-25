@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<style>
+    #sententreeTopicos {
+        border-style: solid;
+        border-width: 2px;
+        border-color: black;
+        padding: 0%;
+        margin: 0%;
+        height: 90vh;
+        width: 80vw;
+    }
+</style>
+<!----------------->
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+
+<script src="{{url_for('static',filename='js/SententreeVis.js')}}"></script>
+
+<head>
+    <title>
+        Sententree
+    </title>
+</head>
+
+<body>
+    <div id="sententreeTopicos"></div>
+</body>
+<!----------------------------------------------->
+<script>
+    /*
+    var graph = {
+        "nodes": [
+            { "name": "jhorel", "width": 60, "height": 40 },
+            { "name": "bebe", "width": 60, "height": 40 },
+            { "name": "casa", "width": 60, "height": 40 },
+            { "name": "dedo", "width": 60, "height": 40 },
+            { "name": "enano", "width": 60, "height": 40 }
+        ],
+        "links": [
+            { "source": 0, "target": 2 },
+            { "source": 2, "target": 1 },
+            { "source": 2, "target": 3 },
+            { "source": 1, "target": 4 }
+        ],
+        "constraints": [
+            {
+                "type": "alignment",
+                "axis": "x",
+                "offsets": [
+                    { "node": 1, "offset": 0 },
+                    { "node": 3, "offset": 0 }
+                ]
+            }
+        ]
+    };
+    */
+
+    
+
+    class SentenTopics {
+        constructor(data, divId) {
+            var domId = "#" + divId;
+
+            this.graph = data
+            this.width = document.querySelector(domId).offsetWidth;
+            this.height = document.querySelector(domId).offsetHeight;
+
+
+
+            this.d3cola = cola.d3adaptor()
+                .avoidOverlaps(true)
+                .size([this.width, this.height]);
+
+            this.svg = d3
+                .select(domId)
+                .append("svg")
+                .attr("class", "main")
+                .attr("width", this.width)
+                .attr("height", this.height);
+
+            this.d3cola
+                .nodes(this.graph.nodes)
+                .links(this.graph.links)
+                //.constraints(this.graph.constraints)
+                .flowLayout('x', 150)
+                .linkDistance(150)
+                .jaccardLinkLengths(5)
+                .start(10, 10, 10);
+
+            var link = this.renderLinks();
+            var node = this.renderNodes();
+            var label = this.renderLabels();
+
+            this.d3cola.on("tick", function () {
+                link.attr("x1", function (d) {
+                    return d.source.x;
+                })
+                    .attr("y1", function (d) {
+
+                        return d.source.y;
+                    })
+                    .attr("x2", function (d) {
+                        var w = this.getBBox().width;
+                        return d.target.x;
+                    })
+                    .attr("y2", function (d) {
+                        return d.target.y;
+                    });
+                //------------------------------------
+                node.attr("x", function (d) {
+                    var w = this.getBBox().width;
+                    //return d.x - d.width / 2; 
+                    return d.x - w / 2;
+                })
+                    .attr("y", function (d) {
+                        var h = this.getBBox().height;
+                        //return d.y - d.height / 2; 
+                        return d.y - h / 2;
+                    });
+                //------------------------------------
+                label.attr("x", function (d) {
+                    var w = this.getBBox().width;
+
+                    return d.x - w / 2;
+
+                })
+                    .attr("y", function (d) {
+                        var h = this.getBBox().height;
+                        return d.y;
+                    });
+
+            });
+
+
+        }
+        renderLinks(params) {
+            var link = this.svg
+                .selectAll(".link")
+                .data(this.graph.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke", "red");
+
+            return link
+        }
+        renderNodes(params) {
+            var node = this.svg
+                .selectAll(".node")
+                .data(this.graph.nodes)
+                .enter()
+                .append("rect")
+                .attr("class", "node")
+                .attr("width", function (d) {
+                    var sizePalabra = d.name;
+                    return sizePalabra.length * 10.5;
+                })
+                .attr("height", function (d) {
+                    var sizePalabra = d.name;
+                    return sizePalabra.length * 4;
+                })
+                .style("fill", "white")
+                .style("stroke-width", "2")
+                .style("stroke", "white")
+                .call(this.d3cola.drag);
+
+            return node;
+        }
+        renderLabels() {
+            var label = this.svg
+                .selectAll(".label")
+                .data(this.graph.nodes)
+                .enter()
+                .append("text")
+                .attr("class", "label")
+                .attr('dy', '.28em')
+                .text(function (d) { return d.label; })
+                .style("font-size", (d) => { return 100 + "%"; })
+                .style("font-weight", "bold")
+                .call(this.d3cola.drag);
+
+            label.append("title").text(function (d) { return d.label; });
+
+            return label;
+        }
+
+    }
+
+    var graph = JSON.parse('{{data|tojson|safe}}');
+    console.log(graph);
+    const arbol = new SentenTopics(graph, "sententreeTopicos");
+
+    /*
+    document.querySelector("#sententreeTopicos").offsetHeight;
+
+    var width = document.querySelector("#sententreeTopicos").offsetWidth;
+    height = document.querySelector("#sententreeTopicos").offsetHeight;
+
+
+    var d3cola = cola.d3adaptor()
+        .avoidOverlaps(true)
+        .size([width, height]);
+
+    var svg = d3
+        .select("#sententreeTopicos")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    d3cola
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .constraints(graph.constraints)
+        .flowLayout('x', 90)
+        .linkDistance(90)
+        .jaccardLinkLengths(1)
+        .start(10, 10, 10);
+
+
+    var link = svg.selectAll(".link")
+        .data(graph.links)
+        .enter().append("line")
+        .attr("class", "link")
+        .style("stroke", "red");
+
+    var node = svg
+        .selectAll(".node")
+        .data(graph.nodes)
+        .enter()
+        .append("rect")
+        .attr("class", "node")
+        .attr("width", function (d) {
+            var sizePalabra = d.name;
+            return sizePalabra.length * 10.5;
+        })
+        .attr("height", function (d) {
+            var sizePalabra = d.name;
+            return sizePalabra.length * 4;
+        })
+        .style("fill", "white")
+        .style("stroke-width", "2")
+        .style("stroke", "white")
+        .call(d3cola.drag);
+
+
+    var label = svg
+        .selectAll(".label")
+        .data(graph.nodes)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr('dy', '.28em')
+        .text(function (d) { return d.name; })
+        .style("font-size", (d) => { return 100 + "%"; })
+        .style("font-weight", "bold")
+        .call(d3cola.drag);
+
+
+    //.call(d3cola.drag);
+
+    label.append("title").text(function (d) { return d.name; });
+
+
+    d3cola.on("tick", function () {
+        link.attr("x1", function (d) {
+            return d.source.x;
+        })
+            .attr("y1", function (d) {
+
+                return d.source.y;
+            })
+            .attr("x2", function (d) {
+                var w = this.getBBox().width;
+                return d.target.x;
+            })
+            .attr("y2", function (d) {
+                return d.target.y;
+            });
+
+        node.attr("x", function (d) {
+            var w = this.getBBox().width;
+            //return d.x - d.width / 2; 
+            return d.x - w / 2;
+        })
+            .attr("y", function (d) {
+                var h = this.getBBox().height;
+                //return d.y - d.height / 2; 
+                return d.y - h / 2;
+            });
+
+        label.attr("x", function (d) {
+            var w = this.getBBox().width;
+
+            return d.x - w / 2;
+
+        })
+            .attr("y", function (d) {
+                var h = this.getBBox().height;
+                return d.y;
+            });
+
+    });
+    */
+</script>
+
+</html>
