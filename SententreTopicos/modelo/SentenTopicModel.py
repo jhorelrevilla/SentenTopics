@@ -8,11 +8,12 @@ class Sententopic:
   def __init__(self,dataDf,numPalabrasPerTopic):  
 
     self.topicList=self.getTopicList()
-
+    self.numPalabrasPerTopic=numPalabrasPerTopic
     dataDf['topico'] = dataDf.apply(lambda x: self.dividirDfTopicos(x.tweetFiltrado) , axis=1)
 
     self.SententopicDfList=self.createSententopicDf(dataDf)
     self.SententopicList=[]
+    """
     for i in range(len(self.SententopicDfList)):
       self.SententopicList.append(
             Sententree(self.SententopicDfList[i],
@@ -21,7 +22,7 @@ class Sententopic:
                        i
                        )
           )
-    
+    """    
     
   def dividirDfTopicos(self,tweet):
     resultTopics=[]
@@ -52,7 +53,7 @@ class Sententopic:
     result=[]
     for topic in range(len(self.topicList)):
       topicDf=df.loc[df['topico'] == topic]
-      print(f"topico {topic} tienen {topicDf.shape}")
+      #print(f"topico {topic} tienen {topicDf.shape}")
       topicDf.reset_index(drop=True, inplace=True)
       result.append(topicDf)
     return result
@@ -62,70 +63,44 @@ class Sententopic:
     nodos=[]
     links=[]
     restricciones=[]
+    grupos=[]
     topNodes=[]
 
     for sententree in self.SententopicList:
       nodos.extend(sententree.getNodes())
       links.extend(sententree.getLinks())
       restricciones.extend(sententree.getRestricciones())
+      grupos.extend(sententree.getGrupos())
 
     #nodo inicial y links y restricciones
     nodos.append(
         {
-          "name":"Sententopic",
           "label":"Sententopic",
           "width":60,
           "heigth":40
         }
     )
 
-    for sententree in self.SententopicList:
+    for sententree in range(len(self.SententopicList)):
       links.append(
           {
-            "source":"Sententopic",
-            "target":f"{sententree.numTopic}-0"
+            "source":len(nodos)-1,
+            "target":self.numPalabrasPerTopic+sententree
           }
       )
-      topNodes.append(
+      restricciones.append(
           {
-            "node":f"{sententree.numTopic}-0",
-            "offset":0
+            "axis":"x",
+            "left":len(nodos)-1,
+            "right":self.numPalabrasPerTopic+sententree,
+            "gap":50
           }
       )
     
-    restricciones.append(
-        {
-            "type":"alignment",
-            "axis":"x",
-            "offsets":topNodes
-        }
-    )
-
-
-    
-    #actualizar links y restricciones
-    for nodo in nodos:
-      nodosID.append(nodo['name'])
-    
-
-    for link in links:
-      link["source"]=nodosID.index(link["source"])
-      link["target"]=nodosID.index(link["target"])
-    
-    #for restriccion in restricciones:
-    #  for offset in restriccion["offsets"]:
-    #    offset["node"]=nodosID.index(offset["node"])
-
-    
-
-    #print(len(nodos))
-    #print(nodos)
-    #print(restricciones)
-
-
     result={
         "nodes":nodos,
         "links":links,
-        "constraints":restricciones
+        "constraints":restricciones,
+        "groups":grupos
       }
     return result

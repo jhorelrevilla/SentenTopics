@@ -9,21 +9,30 @@
         height: 90vh;
         width: 80vw;
     }
+    .group{
+        cursor: grab;
+    }
+    .label{
+        cursor: grab;
+    }
 </style>
 <!----------------->
 <html>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
 
 <script src="{{url_for('static',filename='js/SententreeVis.js')}}"></script>
 
 <head>
     <title>
-        Sententree
+        Sententopic
     </title>
 </head>
 
 <body>
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
     <div id="sententreeTopicos"></div>
 </body>
 <!----------------------------------------------->
@@ -57,17 +66,16 @@
     */
 
     
-
+    const escogidos=[];
     class SentenTopics {
         constructor(data, divId) {
             var domId = "#" + divId;
-
+            
             this.graph = data
             this.width = document.querySelector(domId).offsetWidth;
             this.height = document.querySelector(domId).offsetHeight;
-
-
-
+            
+            
             this.d3cola = cola.d3adaptor()
                 .avoidOverlaps(true)
                 .size([this.width, this.height]);
@@ -82,89 +90,88 @@
             this.d3cola
                 .nodes(this.graph.nodes)
                 .links(this.graph.links)
-                //.constraints(this.graph.constraints)
-                .flowLayout('x', 150)
-                .linkDistance(150)
-                .jaccardLinkLengths(5)
-                .start(10, 10, 10);
+                .groups(this.graph.groups)
+                .constraints(this.graph.constraints)
+                .flowLayout('x', 100)
+                //.linkDistance(150)
+                //.jaccardLinkLengths(10,0.7)
+                .start();
 
+            var group = this.renderGroups();
             var link = this.renderLinks();
-            var node = this.renderNodes();
+            //var node = this.renderNodes();
             var label = this.renderLabels();
+            
 
             this.d3cola.on("tick", function () {
-                link.attr("x1", function (d) {
+                const anchos=[]
+                const gap=3;
+                label
+                .attr("x", function (d) {
+                    anchos.push(this.getBBox().width);
+                    var w = this.getBBox().width;
+                    return d.x - w / 2;
+                })
+                .attr("y", function (d) {
+                    var h = this.getBBox().height;
+                    return d.y;
+                });
+                //------------------------------------
+                link
+                .attr("x1", function (d,i) {
+                    /*if(d.target.x>d.source.x){
+                        console.log(d.target);
+                        return d.source.x+(anchos[i]/2)+gap;
+                    }
+                    else{
+                        return d.source.x-(anchos[i]/2)-gap;
+                    }*/
                     return d.source.x;
                 })
-                    .attr("y1", function (d) {
-
-                        return d.source.y;
-                    })
-                    .attr("x2", function (d) {
-                        var w = this.getBBox().width;
-                        return d.target.x;
-                    })
-                    .attr("y2", function (d) {
-                        return d.target.y;
-                    });
-                //------------------------------------
-                node.attr("x", function (d) {
-                    var w = this.getBBox().width;
-                    //return d.x - d.width / 2; 
-                    return d.x - w / 2;
+                .attr("y1", function (d,i) {
+                    return d.source.y;
                 })
-                    .attr("y", function (d) {
-                        var h = this.getBBox().height;
-                        //return d.y - d.height / 2; 
-                        return d.y - h / 2;
-                    });
-                //------------------------------------
-                label.attr("x", function (d) {
-                    var w = this.getBBox().width;
-
-                    return d.x - w / 2;
-
+                .attr("x2", function (d,i) {
+                    /*if(d.target.x>d.source.x){
+                        return d.target.x-(anchos[i*2]/2)-gap;
+                    }
+                    else{
+                        return d.target.x+(anchos[i*2]/2)+gap;
+                    }*/
+                    return d.target.x;
                 })
-                    .attr("y", function (d) {
-                        var h = this.getBBox().height;
-                        return d.y;
-                    });
+                .attr("y2", function (d) {
 
+                    return d.target.y;
+                });
+                //------------------------------------
+                group.attr("x", function (d) {
+                    return d.bounds.x-10; 
+                })
+                .attr("y", function (d) {
+                     return d.bounds.y-10; 
+                })
+                .attr("width", function (d) {
+                     return d.bounds.width()+20; 
+                })
+                .attr("height", function (d) {
+                    return d.bounds.height()+20;
+                });
             });
 
 
         }
+        
         renderLinks(params) {
             var link = this.svg
                 .selectAll(".link")
                 .data(this.graph.links)
                 .enter().append("line")
                 .attr("class", "link")
-                .style("stroke", "red");
+                .style("stroke", "#bbbbbb")
+                .style("stroke-width","5px");
 
             return link
-        }
-        renderNodes(params) {
-            var node = this.svg
-                .selectAll(".node")
-                .data(this.graph.nodes)
-                .enter()
-                .append("rect")
-                .attr("class", "node")
-                .attr("width", function (d) {
-                    var sizePalabra = d.name;
-                    return sizePalabra.length * 10.5;
-                })
-                .attr("height", function (d) {
-                    var sizePalabra = d.name;
-                    return sizePalabra.length * 4;
-                })
-                .style("fill", "white")
-                .style("stroke-width", "2")
-                .style("stroke", "white")
-                .call(this.d3cola.drag);
-
-            return node;
         }
         renderLabels() {
             var label = this.svg
@@ -175,15 +182,50 @@
                 .attr("class", "label")
                 .attr('dy', '.28em')
                 .text(function (d) { return d.label; })
-                .style("font-size", (d) => { return 100 + "%"; })
-                .style("font-weight", "bold")
+                .style("font-size", (d) => { return d.fontSize+"%"; })
+                .style("font-weight", "bolder")
+                //.style("fill","white")
                 .call(this.d3cola.drag);
 
-            label.append("title").text(function (d) { return d.label; });
+            label.append("title").text(function (d) { return d.rawText; });
 
             return label;
         }
+        renderGroups(){
+            var group = this.svg.selectAll(".group")
+            .data(this.graph.groups)
+            .enter()
+            .append("rect")
+            .attr("rx", 8).attr("ry", 8)
+            .attr("class", "group")
+            .style("stroke-width",3)
+            .style("stroke","rgb(0,0,0)")
+            .style("stroke-dasharray",10)
+            .style("fill", function (d, i) {
+                return "white"; 
+            })
+            .on('click',function(d,i){
+                if(escogidos.includes(d.grupo)){
+                    const index=escogidos.indexOf(d.grupo);
+                    escogidos.splice(index,1);
+                    console.log(escogidos);
+                    d3
+                    .select(this)
+                    .style("fill","white");
+                    
+                }
+                else{
+                    escogidos.push(d.grupo);
+                    console.log(escogidos);
+                    d3
+                    .select(this)
+                    .style("fill","red");
+                }
+            })
+            .call(this.d3cola.drag);
 
+            return group;
+        }
     }
 
     var graph = JSON.parse('{{data|tojson|safe}}');
