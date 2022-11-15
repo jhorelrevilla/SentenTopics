@@ -45,13 +45,16 @@ class Sententree:
         self.nodosListID = []
         self.topic = self.tokenizarTopic(topic)
         self.numTopic = numTopic
+        self.palabrasNecesarias=palabrasNecesarias
         # nodo=getNodo
-        self.maxFont = 180
-        self.minFont = 100
+        self.maxFont = 200
+        self.minFont = 90
         self.maxBdSize = 0
         # crear nodo a partir de la palabra con mayor apoyo
         self.nodoRaiz = self.getNodeTopic(dataDf)
         # self.topic.remove(self.nodoRaiz.seq[0])
+        self.activate=False
+        self.visible=True
         self.leafNodes = self.generacionPatrones(
             self.nodoRaiz, palabrasNecesarias)
     # ------------------------------------------------------------------------------------
@@ -158,8 +161,8 @@ class Sententree:
                     "rawText": str(topTweets),
                     "rawTextID": s0[:1],
                     "size": len(s0),
-                    "width": 100,
-                    "height": 30
+                    "width": 1,
+                    "height": 1
                 }
                 self.nodosListID.append(
                     f"{self.numTopic}-{palabrasNecesarias}")
@@ -211,8 +214,8 @@ class Sententree:
             "rawText": str(topTweets),
             "rawTextID": s0[:1],
             "size": len(s0),
-            "width": 100,
-            "height": 30
+            "width": 1,
+            "height": 1
         }
         self.nodosListID.append(f"{self.numTopic}-0")
         newNodo.graphNodes = [nodoJson]
@@ -221,9 +224,9 @@ class Sententree:
     # ------------------------------------------------------------------------------------
 
     def getNodePos(self, node):
-        return self.nodosListID.index(node)+self.numTopic
-    # ------------------------------------------------------------------------------------
 
+        return self.nodosListID.index(node)+(self.numTopic*(self.palabrasNecesarias+1))
+    # ------------------------------------------------------------------------------------
     def getData(self):
 
         nodos = self.getNodes()
@@ -238,15 +241,30 @@ class Sententree:
             "groups": grupos
         }
         return result
+    
     # ------------------------------------------------------------------------------------
 
     def getGrupos(self):
+        indice=self.numTopic*(self.palabrasNecesarias+1)
+        if(not self.activate):
+            grupos=[
+                {
+                    "leaves": [self.nodosListID[0]],
+                    "grupo":self.numTopic,
+                    "escogido":0
+                }
+            ]
+            return grupos
+        
         grupos = [
             {
-                "leaves": [i+self.numTopic for i in range(len(self.getNodes()))],
-                "grupo":self.numTopic
+                #"leaves": [i+indice for i in range(self.palabrasNecesarias+1)],
+                "leaves": self.nodosListID,
+                "grupo":self.numTopic,
+                "escogido":0
             }
         ]
+
         return grupos
     # ------------------------------------------------------------------------------------
 
@@ -256,6 +274,9 @@ class Sententree:
         grafo={}
         secuencias = []
         # extraer secuencias
+        if(not self.activate):
+            return result
+
         for leaf in self.leafNodes:
             secuencia = []
             pointer = leaf
@@ -271,20 +292,20 @@ class Sententree:
 
             secuencias.append(secuencia)
 
-        for seq in secuencias:
-            for word in seq:
-                print(f"{word.name}  ", end="")
-            print("")
+        #for seq in secuencias:
+        #    for word in seq:
+        #        print(f"{word.name}  ", end="")
+        #    print("")
 
         for secuencia in secuencias:
-          print("-----------------")
-          print(f"palabra {secuencia[0].name}") 
+          #print("-----------------")
+          #print(f"palabra {secuencia[0].name}") 
           listPalabras=[ str(i.word) for i in secuencia]
           topTweetId = secuencia[0].graphNodes[-1]['rawTextID'][0]
           topTweet = self.tokens.data['tokens'][int(topTweetId)].split()
 
-          print(f"listPalabras {listPalabras}")
-          print (f"topTweet {topTweet}")
+          #print(f"listPalabras {listPalabras}")
+          #print (f"topTweet {topTweet}")
           
           tempo = {}
 
@@ -294,8 +315,8 @@ class Sententree:
           #print(f"tempo {tempo}")
           tempo = {k: v for k, v in sorted(
             tempo.items(), key=lambda item: item[1])}
-          print(f"orden que aparecen {tempo}")
-          print(secuencia[0].graphLinks)
+          #print(f"orden que aparecen {tempo}")
+          #print(secuencia[0].graphLinks)
 
           
           for word in range(1,len(listPalabras)):
@@ -310,16 +331,22 @@ class Sententree:
             else:
               if target not in grafo[source]:
                 grafo[source].append(target)
-        print(f"grafo {grafo}")
+        #print(f"grafo {grafo}")
         for k, v in grafo.items():
           for target in v:
-              result.append(
-                  {
+                """
+                result.append({
                     "source": self.getNodePos(k),
-                    "target": self.getNodePos(target)
-                  }
-              )
-        print("####################################################")
+                    "target": self.getNodePos(target),
+                    "leght":120
+                })
+                """
+                result.append({
+                    "source": k,
+                    "target": target,
+                    "leght":100
+                })
+        #print("####################################################")
         """
         for secuencia in secuencias:
           for seq in secuencia:
@@ -392,7 +419,7 @@ class Sententree:
                 "axis": "x",
                 "left": link["source"],
                 "right": link["target"],
-                "gap": 50
+                "gap": 110
             }
             result.append(constrait)
             if (link['source'] in restriccionXSource):
@@ -404,9 +431,9 @@ class Sententree:
                 restriccionXTarget[link['target']].append(link['source'])
             else:
                 restriccionXTarget[link['target']] = [link['source']]
-        print(restriccionXSource)
-        print(restriccionXTarget)
-
+        #print(restriccionXSource)
+        #print(restriccionXTarget)
+        """
         for k, v in restriccionXSource.items():
             if (len(v) >= 2):
                 newRestriction = {
@@ -434,12 +461,16 @@ class Sententree:
                         "offset": "0"
                     })
                 result.append(newRestriction)
+        """
         return result
     # ------------------------------------------------------------------------------------
 
     def getNodes(self):
         nodosDict = []
         result = []
+        if(not self.activate):
+            return self.nodoRaiz.graphNodes
+
         for seq in self.leafNodes:
             if (len(seq.seq)) >= 1:
                 for nodo in seq.graphNodes:
@@ -450,6 +481,12 @@ class Sententree:
                         continue
         return result
     # ------------------------------------------------------------------------------------
-
     def plotTree(self):
         DotExporter(self.nodoRaiz).to_picture("ArbolSententree.png")
+    # ------------------------------------------------------------------------------------
+    def printSententree(self):
+        print(f"Nodo principal {self.nodosListID[0]}")
+        for nodo in self.nodosListID:
+            print(nodo)
+        print("######################################")
+        

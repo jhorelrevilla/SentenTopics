@@ -4,23 +4,24 @@ import numpy as np
 import json
 from modelo.SentenTopicModel import Sententopic
 from modelo.SententreeModel import Sententree
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 
 
 df=pd.read_csv("data/#WWDCResultado.csv")
-arbol=Sententopic(df,1)
+arbol=Sententopic(df,5)
 
-topico=2
+topico=0
 arbol2=Sententree(
     arbol.SententopicDfList[topico],
-    8,
+    1,
     arbol.topicList[topico],
     0)
+    
 
 
-#rawData=arbol.getDataJson()
-rawData=arbol2.getData()
 
+#rawData=arbol2.getData()
+#arbol.printSententopic()
 
 
 
@@ -64,11 +65,35 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    rawData=arbol.getDataJson()
     return render_template(
         "index.html",
         data=rawData
     )
 
+@app.route('/crearSententree',methods=['POST'])
+def crearSententree():
+    if request.method != "POST":
+        return
 
+    escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
+    print(escogidos)
+    for topico in escogidos:
+        #print(f"activate {arbol.SententopicList[topico].activate}")
+        arbol.SententopicList[topico].activate=not arbol.SententopicList[topico].activate
+        #print(f"activate {arbol.SententopicList[topico].activate}")
+    rawData=arbol.getDataJson()
+    return rawData
+
+@app.route('/eliminarNodo',methods=['POST'])
+def eliminarNodo():
+    if request.method != "POST":
+        return
+    escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
+    print(escogidos)
+    for topico in escogidos:
+        arbol.SententopicList[topico].visible=False
+    rawData=arbol.getDataJson()
+    return rawData
 if __name__ == '__main__':
     app.run(debug=True)

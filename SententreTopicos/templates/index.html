@@ -9,10 +9,12 @@
         height: 90vh;
         width: 80vw;
     }
-    .group{
+
+    .group {
         cursor: grab;
     }
-    .label{
+
+    .label {
         cursor: grab;
     }
 </style>
@@ -20,7 +22,7 @@
 <html>
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
-
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="{{url_for('static',filename='js/SententreeVis.js')}}"></script>
 
 <head>
@@ -30,9 +32,16 @@
 </head>
 
 <body>
-    <button>1</button>
-    <button>2</button>
-    <button>3</button>
+
+    <button onclick="crearSententree()">
+        mostrar/ocultar Sententree
+    </button>
+    <button onclick="eliminarNodo()">
+        -
+    </button>
+    <button>
+        +
+    </button>
     <div id="sententreeTopicos"></div>
 </body>
 <!----------------------------------------------->
@@ -64,51 +73,127 @@
         ]
     };
     */
+    var graph = JSON.parse('{{data|tojson|safe}}');
+    console.log(graph);
+    var escogidos = [];
+    //------------------------------
+    const width = document.querySelector("#sententreeTopicos").offsetWidth;
+    const height = document.querySelector("#sententreeTopicos").offsetHeight;
 
-    
-    const escogidos=[];
-    class SentenTopics {
-        constructor(data, divId) {
-            var domId = "#" + divId;
-            
-            this.graph = data
-            this.width = document.querySelector(domId).offsetWidth;
-            this.height = document.querySelector(domId).offsetHeight;
-            
-            
-            this.d3cola = cola.d3adaptor()
-                .avoidOverlaps(true)
-                .size([this.width, this.height]);
+    const d3cola = cola.d3adaptor()
+        .avoidOverlaps(true)
+        .size([width, height]);
 
-            this.svg = d3
-                .select(domId)
-                .append("svg")
-                .attr("class", "main")
-                .attr("width", this.width)
-                .attr("height", this.height);
+    const svg = d3
+        .select("#sententreeTopicos")
+        .append("svg")
+        .attr("class", "main")
+        .attr("width", width)
+        .attr("height", height);
 
-            this.d3cola
-                .nodes(this.graph.nodes)
-                .links(this.graph.links)
-                .groups(this.graph.groups)
-                .constraints(this.graph.constraints)
-                .flowLayout('x', 100)
-                //.linkDistance(150)
-                //.jaccardLinkLengths(10,0.7)
-                .start();
 
-            var group = this.renderGroups();
-            var link = this.renderLinks();
-            //var node = this.renderNodes();
-            var label = this.renderLabels();
-            
+    function renderLinks() {
+        var link = svg
+            .selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke", "#bbbbbb")
+            .style("stroke-width", "5px");
+        return link;
+    }
+    function renderLabels() {
+        var label = svg
+            .selectAll(".label")
+            .data(graph.nodes)
+            .enter()
+            .append("text")
+            .attr("class", "label")
+            .attr('dy', '.28em')
+            .text(function (d) { return d.label; })
+            .style("font-size", (d) => { return d.fontSize + "%"; })
+            .style("font-weight", "bolder")
+        //.style("fill","white")
+            .call(d3cola.drag);
 
-            this.d3cola.on("tick", function () {
-                const anchos=[]
-                const gap=3;
-                label
+        label.append("title").text(function (d) { return d.rawText; });
+
+        return label;
+    }
+    function renderGroups() {
+        var group = svg.selectAll(".group")
+            .data(graph.groups)
+            .enter()
+            .append("rect")
+            .attr("rx", 8).attr("ry", 8)
+            .attr("class", "group")
+            .style("stroke-width", 3)
+            .style("stroke", "rgb(0,0,0)")
+            .style("stroke-dasharray", 10)
+            .style("fill-opacity", "0.0")
+            .style("fill","rgb(125,0,0)")
+            .on('click', function (d, i) {
+                if (escogidos.includes(d.grupo)) {
+                    const index = escogidos.indexOf(d.grupo);
+                    escogidos.splice(index, 1);
+                    console.log(escogidos);
+                    d3
+                        .select(this)
+                        .style("stroke", "rgb(0,0,0)")
+
+                        .style("fill-opacity", "0.0");
+                }
+                else {
+                    escogidos.push(d.grupo);
+                    console.log(escogidos);
+                    d3
+                        .select(this)
+                        .style("stroke", "rgb(125,0,0)")
+                        .style("fill-opacity", "0.25");
+                }
+            })
+            .call(d3cola.drag);
+
+        return group;
+    }
+
+    function update() {
+        d3cola
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .groups(graph.groups)
+            .constraints(graph.constraints)
+            .flowLayout('x', 30)
+            //.linkDistance((d,i)=>d.lenght)
+            .jaccardLinkLengths((d, i) => d.lenght, 0.5)
+            .start();
+        
+        var oldLinks=svg.selectAll(".link").remove();
+        var oldLinks=svg.selectAll(".label").remove();
+        var oldLinks=svg.selectAll(".group").remove();
+        /****crear nodos,links y grupos****/
+        
+        const link = renderLinks();
+        const group = renderGroups();
+        const label = renderLabels();
+        
+
+        /****Actualizar Nodos****/
+        var d3Nodes = document.querySelectorAll(".label");
+        const bboxNodes = [];
+        for (var i = 0; i < d3Nodes.length; i++) {
+
+            var labelBbox = d3Nodes[i].getBBox();
+            bboxNodes.push(labelBbox);
+            //console.log(labelBbox);
+            graph.nodes[i].height = labelBbox.height + 2.0;
+            graph.nodes[i].width = labelBbox.width + 2.0;
+        }
+        /****d3 tick****/
+        d3cola.on("tick", function () {
+
+            label
                 .attr("x", function (d) {
-                    anchos.push(this.getBBox().width);
                     var w = this.getBBox().width;
                     return d.x - w / 2;
                 })
@@ -116,9 +201,9 @@
                     var h = this.getBBox().height;
                     return d.y;
                 });
-                //------------------------------------
-                link
-                .attr("x1", function (d,i) {
+            //------------------------------------
+            link
+                .attr("x1", function (d, i) {
                     /*if(d.target.x>d.source.x){
                         console.log(d.target);
                         return d.source.x+(anchos[i]/2)+gap;
@@ -128,10 +213,10 @@
                     }*/
                     return d.source.x;
                 })
-                .attr("y1", function (d,i) {
+                .attr("y1", function (d, i) {
                     return d.source.y;
                 })
-                .attr("x2", function (d,i) {
+                .attr("x2", function (d, i) {
                     /*if(d.target.x>d.source.x){
                         return d.target.x-(anchos[i*2]/2)-gap;
                     }
@@ -144,94 +229,60 @@
 
                     return d.target.y;
                 });
-                //------------------------------------
-                group.attr("x", function (d) {
-                    return d.bounds.x-10; 
-                })
+            //------------------------------------
+            group.attr("x", function (d) {
+                return d.bounds.x;
+            })
                 .attr("y", function (d) {
-                     return d.bounds.y-10; 
+                    return d.bounds.y;
                 })
                 .attr("width", function (d) {
-                     return d.bounds.width()+20; 
+                    return d.bounds.width();
                 })
                 .attr("height", function (d) {
-                    return d.bounds.height()+20;
+                    return d.bounds.height();
                 });
-            });
-
-
-        }
-        
-        renderLinks(params) {
-            var link = this.svg
-                .selectAll(".link")
-                .data(this.graph.links)
-                .enter().append("line")
-                .attr("class", "link")
-                .style("stroke", "#bbbbbb")
-                .style("stroke-width","5px");
-
-            return link
-        }
-        renderLabels() {
-            var label = this.svg
-                .selectAll(".label")
-                .data(this.graph.nodes)
-                .enter()
-                .append("text")
-                .attr("class", "label")
-                .attr('dy', '.28em')
-                .text(function (d) { return d.label; })
-                .style("font-size", (d) => { return d.fontSize+"%"; })
-                .style("font-weight", "bolder")
-                //.style("fill","white")
-                .call(this.d3cola.drag);
-
-            label.append("title").text(function (d) { return d.rawText; });
-
-            return label;
-        }
-        renderGroups(){
-            var group = this.svg.selectAll(".group")
-            .data(this.graph.groups)
-            .enter()
-            .append("rect")
-            .attr("rx", 8).attr("ry", 8)
-            .attr("class", "group")
-            .style("stroke-width",3)
-            .style("stroke","rgb(0,0,0)")
-            .style("stroke-dasharray",10)
-            .style("fill", function (d, i) {
-                return "white"; 
-            })
-            .on('click',function(d,i){
-                if(escogidos.includes(d.grupo)){
-                    const index=escogidos.indexOf(d.grupo);
-                    escogidos.splice(index,1);
-                    console.log(escogidos);
-                    d3
-                    .select(this)
-                    .style("fill","white");
-                    
-                }
-                else{
-                    escogidos.push(d.grupo);
-                    console.log(escogidos);
-                    d3
-                    .select(this)
-                    .style("fill","red");
-                }
-            })
-            .call(this.d3cola.drag);
-
-            return group;
-        }
+        });
     }
 
-    var graph = JSON.parse('{{data|tojson|safe}}');
-    console.log(graph);
-    const arbol = new SentenTopics(graph, "sententreeTopicos");
+    // Main 
+    update();
+    //----------------------------------------------------
+    function crearSententree() {
+        if(escogidos.lenght){
+            return
+        }
+        //console.log("ESCOGIDOS " + escogidos);
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('crearSententree')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[]
+            }
+        })
 
+    }
+    //----------------------------------------------------
+    function eliminarNodo(){
+        if(escogidos.lenght){
+            return
+        }
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('eliminarNodo')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[]
+            }
+        })
+    }
     /*
     document.querySelector("#sententreeTopicos").offsetHeight;
 
