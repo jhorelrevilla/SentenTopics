@@ -5,18 +5,18 @@ import json
 from modelo.SentenTopicModel import Sententopic
 from modelo.SententreeModel import Sententree
 from flask import Flask, jsonify, render_template, request, redirect, url_for
-
+import sys
 
 df=pd.read_csv("data/#WWDCResultado.csv")
 arbol=Sententopic(df,5)
-
+"""
 topico=0
 arbol2=Sententree(
     arbol.SententopicDfList[topico],
     1,
     arbol.topicList[topico],
     0)
-    
+""" 
 
 
 
@@ -80,7 +80,7 @@ def crearSententree():
     print(escogidos)
     for topico in escogidos:
         #print(f"activate {arbol.SententopicList[topico].activate}")
-        arbol.SententopicList[topico].activate=not arbol.SententopicList[topico].activate
+        arbol.SententreeList[topico].activate=not arbol.SententreeList[topico].activate
         #print(f"activate {arbol.SententopicList[topico].activate}")
     rawData=arbol.getDataJson()
     return rawData
@@ -92,7 +92,29 @@ def eliminarNodo():
     escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
     print(escogidos)
     for topico in escogidos:
-        arbol.SententopicList[topico].visible=False
+        arbol.SententreeList[topico].visible=False
+    rawData=arbol.getDataJson()
+    return rawData
+
+@app.route('/buscarTopicos',methods=['POST'])
+def buscarTopicos():
+    if request.method != "POST":
+        return
+    escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
+    numeroTopicos=request.form.get('numeroTopicos')
+    for topico in escogidos:
+        arbol.expandirNodo(topico,int(numeroTopicos))
+        #arbol.SententreeList[topico].visible=False
+    rawData=arbol.getDataJson()
+    return rawData
+
+@app.route('/mezclarTopicos',methods=['POST'])
+def mezclarTopicos():
+    if request.method != "POST":
+        return
+    escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
+    arbol.mezclarTopicos(escogidos)
+
     rawData=arbol.getDataJson()
     return rawData
 if __name__ == '__main__':

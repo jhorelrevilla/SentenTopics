@@ -39,10 +39,12 @@ class Tokenize:
 
 
 class Sententree:
-    def __init__(self, dataDf, palabrasNecesarias, topic, numTopic):
+    def __init__(self, dataDf, palabrasNecesarias, topic, numTopic,parent):
         self.tokens = Tokenize(dataDf)
+        self.parent=parent
         # rawTopic=self.getTopic(numTopic)
         self.nodosListID = []
+        self.rawTopic=topic
         self.topic = self.tokenizarTopic(topic)
         self.numTopic = numTopic
         self.palabrasNecesarias=palabrasNecesarias
@@ -334,13 +336,6 @@ class Sententree:
         #print(f"grafo {grafo}")
         for k, v in grafo.items():
           for target in v:
-                """
-                result.append({
-                    "source": self.getNodePos(k),
-                    "target": self.getNodePos(target),
-                    "leght":120
-                })
-                """
                 result.append({
                     "source": k,
                     "target": target,
@@ -433,35 +428,6 @@ class Sententree:
                 restriccionXTarget[link['target']] = [link['source']]
         #print(restriccionXSource)
         #print(restriccionXTarget)
-        """
-        for k, v in restriccionXSource.items():
-            if (len(v) >= 2):
-                newRestriction = {
-                    "type": "alignment",
-                    "axis": "x",
-                    "offsets": []
-                }
-                for nodo in v:
-                    newRestriction["offsets"].append({
-                        "node": nodo,
-                        "offset": "0"
-                    })
-                result.append(newRestriction)
-        # ///////////////////////////////////
-        for k, v in restriccionXTarget.items():
-            if (len(v) >= 2):
-                newRestriction = {
-                    "type": "alignment",
-                    "axis": "x",
-                    "offsets": []
-                }
-                for nodo in v:
-                    newRestriction["offsets"].append({
-                        "node": nodo,
-                        "offset": "0"
-                    })
-                result.append(newRestriction)
-        """
         return result
     # ------------------------------------------------------------------------------------
 

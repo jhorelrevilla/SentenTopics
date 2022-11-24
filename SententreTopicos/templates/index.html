@@ -17,6 +17,9 @@
     .label {
         cursor: grab;
     }
+    #numTopic{
+        width: 50px;
+    }
 </style>
 <!----------------->
 <html>
@@ -32,16 +35,28 @@
 </head>
 
 <body>
-
-    <button onclick="crearSententree()">
-        mostrar/ocultar Sententree
-    </button>
-    <button onclick="eliminarNodo()">
-        -
-    </button>
-    <button>
-        +
-    </button>
+    <div>
+        <button onclick="crearSententree()">
+            Mostrar/ocultar Sententree
+        </button>
+    </div>
+    <div>
+        <button onclick="eliminarNodo()">
+            Eliminar
+        </button>
+    </div>
+    <div>
+        <button onclick="mezclarTopicos()">
+            Mezclar
+        </button>
+    </div>
+    <div>
+        Numero de topicos<br>
+        <input id="numTopic" type="number" value="2" min="2" max="10">
+        <button onclick="buscarTopicos()">
+            Buscar topicos
+        </button>
+    </div>
     <div id="sententreeTopicos"></div>
 </body>
 <!----------------------------------------------->
@@ -280,6 +295,49 @@
                 //console.log(graph);
                 update();
                 escogidos=[]
+            }
+        })
+    }
+    //----------------------------------------------------
+    function buscarTopicos(){
+        var valor=document.querySelector("#numTopic").value;
+        if(escogidos.lenght){
+            return
+        }
+        console.log("enviando buscarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('buscarTopicos')}}",
+            data: { 
+                "escogidos": escogidos,
+                "numeroTopicos":valor
+            },
+            success: function (result) {
+                //console.log("GAAAAAAAAAA")
+                //console.log(result);
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[];
+            }
+        })
+    }
+    //----------------------------------------------------
+    function mezclarTopicos(){
+        if(escogidos.lenght<2){
+            return
+        }
+        console.log("enviando mezclarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('mezclarTopicos')}}",
+            data: { 
+                "escogidos": escogidos
+            },
+            success: function (result) {
+                graph = result;
+                update();
+                escogidos=[];
             }
         })
     }
