@@ -6,8 +6,10 @@ var svg = d3.select("body").append('svg')
         width: 1400,
         height: 660
     });
-var fileList = ["WikiNews", "Huffington", "CrooksAndLiars", "EmptyWheel", "Esquire", "FactCheck", "VIS_papers", "IMDB", "PopCha", "Cards_PC", "Cards_Fries", "QuantumComputing"]
+var fileList = ["WikiNews", "Huffington","WWDC","texas","russia", "CrooksAndLiars", "EmptyWheel", "Esquire", "FactCheck", "VIS_papers", "IMDB", "PopCha", "Cards_PC", "Cards_Fries", "QuantumComputing"]
 
+//var initialDataset = "WWDC";
+//var categories = ["0","1","2","3","4","5","6","7","8","9"];
 var initialDataset = "EmptyWheel";
 var categories = ["person", "location", "organization", "miscellaneous"];
 
@@ -57,6 +59,18 @@ function loadData() {
     fileName = "data/" + fileName + ".tsv"; // Add data folder path
     if (fileName.indexOf("Cards_Fries") >= 0) {
         categories = ["increases_activity", "decreases_activity"];
+        loadAuthorData(draw, initTop);
+    }
+    else if (fileName.indexOf("WWDC") >= 0) {
+        categories = ["0","1","2","3","4","5","6","7","8","9"];
+        loadAuthorData(draw, initTop);
+    }
+    else if (fileName.indexOf("texas") >= 0) {
+        categories = ["0","1","2","3","4","5","6","7","8","9"];
+        loadAuthorData(draw, initTop);
+    }
+    else if (fileName.indexOf("russia") >= 0) {
+        categories = ["0","1","2","3","4","5","6","7","8","9"];
         loadAuthorData(draw, initTop);
     }
     else if (fileName.indexOf("Cards_PC") >= 0) {

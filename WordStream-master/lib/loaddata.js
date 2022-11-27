@@ -2,11 +2,19 @@ const maxWidth = 2000, maxHeight = 2000, maxTop = 50;
 var totalData;
 function loadBlogPostData(draw, top){
     var topics = [];
+    //console.log(fileName)
     d3.tsv(fileName, function(error, rawData) {
         if (error) throw error;
-        var inputFormat = d3.time.format('%Y-%m-%dT%H:%M:%S');
-        var outputFormat = d3.time.format('%b %Y');
+        var inputFormat=null,outputFormat=null;
+        console.log("===================="+fileName+"====================")
+        //console.log("initial rawData "+JSON.stringify(rawData));
+
+        inputFormat = d3.time.format('%Y-%m-%dT%H:%M:%S');
+        outputFormat = d3.time.format('%b %Y');
+        
+
         topics = categories;
+        console.log("categories "+topics)
         //Filter and take only dates in 2013
 
         rawData = rawData.filter(function(d){
@@ -14,6 +22,10 @@ function loadBlogPostData(draw, top){
             var startDate =  inputFormat.parse('2012-12-01T00:00:00');
             var endDate = inputFormat.parse('2014-01-01T00:00:00');
             //2011 for CrooksAndLiars
+            if(fileName.indexOf("WWDC")>=0){
+                startDate = inputFormat.parse('2022-06-06T00:00:00');
+                endDate = inputFormat.parse('2022-06-06T14:00:00');
+            }
             if(fileName.indexOf("Liars")>=0){
                 startDate = inputFormat.parse('2009-12-01T00:00:00');
                 endDate = inputFormat.parse('2011-01-01T00:00:00');
@@ -28,20 +40,37 @@ function loadBlogPostData(draw, top){
             }
             return      time  >= startDate && time < endDate;
         });
-
+        console.log("rawData "+JSON.stringify(rawData))
         var data = {};
-        d3.map(rawData, function(d, i){
-            var date = Date.parse(d.time);
-            date = outputFormat(new Date(date));
-            topics.forEach(topic => {
+        if(fileName.indexOf("WWDC")>=0){
+            d3.map(rawData, function(d, i){
+                var date = inputFormat.parse(d.time);
+                var outputFormat = d3.time.format('%H %M');
+                date = outputFormat(new Date(date));
+
+                var topic=d["Conference"];
                 if(!data[date]) data[date] = {};
-                data[date][topic] = data[date][topic] ? (data[date][topic] + '|' +d[topic]): (d[topic]);
+                data[date][topic] = data[date][topic] ? (data[date][topic] + '|' +d["tweetFiltrado"]): (d["tweetFiltrado"]);
             });
-        });
+        }
+        else{
+            d3.map(rawData, function(d, i){
+                var date = Date.parse(d.time);
+                date = outputFormat(new Date(date));
+                topics.forEach(topic => {
+                    if(!data[date]) data[date] = {};
+                    data[date][topic] = data[date][topic] ? (data[date][topic] + '|' +d[topic]): (d[topic]);
+                });
+            });
+        }
+
+        console.log("data"+JSON.stringify(data))
+
         var data = d3.keys(data).map(function(date, i){
             var words = {};
             topics.forEach(topic => {
                 var raw = {};
+                if(!data[date][topic]) data[date][topic] = "";
                 raw[topic] = data[date][topic].split('|');
                 //Count word frequencies
                 var counts = raw[topic].reduce(function(obj, word){
@@ -73,14 +102,24 @@ function loadBlogPostData(draw, top){
         }).sort(function(a, b){//sort by date
             return outputFormat.parse(a.date) - outputFormat.parse(b.date);
         });
-        processSudden(data);
 
-        totalData = getTop(data, topics, maxTop).slice(1); // omit first timestep
-        var resultData = getTop(JSON.parse(JSON.stringify(totalData)), topics, top);
-        globalData = JSON.parse(JSON.stringify(resultData));
+        console.log("data2 "+JSON.stringify(data))
+        //processSudden(data);
+        //console.log("processSudden "+JSON.stringify(data))
+        console.log("length data "+data.length)        
 
-        // resultData = getTop(data, topics, top);
-        draw(resultData);
+        //totalData = getTop(data, topics, maxTop).slice(1); // omit first timestep
+        //console.log("totalData "+JSON.stringify(totalData))
+
+        //var resultData = getTop(JSON.parse(JSON.stringify(totalData)), topics, top);
+        //console.log("resultData "+JSON.stringify(resultData))
+
+        //globalData = JSON.parse(JSON.stringify(resultData));
+
+        
+        //resultData = getTop(data, topics, top);
+        //draw(resultData);
+        draw(data);
     });
 }
 function loadAuthorData(draw, top){
@@ -88,6 +127,7 @@ function loadAuthorData(draw, top){
     d3.tsv(fileName, function(error, rawData) {
         if (error) throw error;
         //Filter
+        console.log("---------------"+fileName+"---------------");
         var startYear = 2004;
         var endYear = 2016;
         if(fileName.indexOf("Cards_Fries")>=0 || fileName.indexOf("Cards_PC")>=0){
@@ -102,16 +142,45 @@ function loadAuthorData(draw, top){
             startYear = 1994;
             endYear = 2016;
         }
+
+        if(fileName.indexOf("WWDC")>=0){
+            startYear = 2010;
+            endYear = 2014;
+        }
+        if(fileName.indexOf("texas")>=0){
+            startYear = 2000;
+            endYear = 2023;
+        }
+        if(fileName.indexOf("russia")>=0){
+            startYear = 2000;
+            endYear = 2023;
+        }
         rawData = rawData.filter(d=>{
             return d.Year >= startYear && d.Year <= endYear;
         });
+
+        console.log("rawData "+JSON.stringify(rawData));
         var data={};
-        d3.map(rawData, function(d, i){
-            var year = +d["Year"];
-            var topic = d["Conference"];
-            if(!data[year]) data[year] = {};
-            data[year][topic] = (data[year][topic]) ? ((data[year][topic])+";" + d["Author Names"]): (d["Author Names"]);
-        });
+        
+        if(fileName.indexOf("WWDC")>=0 || fileName.indexOf("texas")>=0 || fileName.indexOf("russia")>=0){
+            d3.map(rawData, function(d, i){
+                var year = +d["Year"];
+                var topic = d["Conference"];
+                if(!data[year]) data[year] = {};
+                data[year][topic] = (data[year][topic]) ? ((data[year][topic])+";" + d["tweetFiltrado"]): (d["tweetFiltrado"]);
+            });
+        }
+        else{
+            d3.map(rawData, function(d, i){
+                var year = +d["Year"];
+                var topic = d["Conference"];
+                if(!data[year]) data[year] = {};
+                data[year][topic] = (data[year][topic]) ? ((data[year][topic])+";" + d["Author Names"]): (d["Author Names"]);
+            });
+        }
+        
+        
+        console.log("data "+JSON.stringify(data));
         var data = d3.keys(data).map(function(year, i){
             var words = {};
             topics.forEach(topic => {
@@ -148,6 +217,7 @@ function loadAuthorData(draw, top){
             return a.date - b.date;
         });
         processSudden(data);
+        console.log("data len "+data.length)
 
         totalData = getTop(data, topics, maxTop).slice(1); // omit first timestep
         var resultData = getTop(JSON.parse(JSON.stringify(totalData)), topics, top);
@@ -178,6 +248,7 @@ function loadQuantumComputing(draw, top) {
 function getTop(data, topics, top){
     data.forEach((d) => {
         topics.forEach((topic) => {
+            //console.log("nani "+JSON.stringify(d["words"][topic]));
             d["words"][topic] = d["words"][topic]
                 .slice(0,top);
             d["words"][topic].sort(function(a, b){//sort the terms by frequency

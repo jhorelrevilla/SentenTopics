@@ -53,6 +53,7 @@ d3.layout.wordStream = function(){
 
     //#region helper functions
     function buildFontScale(data){
+        //console.log("buildFontScale "+JSON.stringify(data))
         var topics = d3.keys(data[0].words);
         //#region scale for the font size.
         var maxSudden = 0;
@@ -422,11 +423,11 @@ d3.layout.wordStream = function(){
                 var d = {};
                 while (++di < n) {
                     d = words[di];
+                    //console.log(d)
                     var w = d.width,
                         h = d.height,
                         x = d.x,
                         y = d.y;
-
                     var pixels = c.getImageData(d.x, d.y, d.width, d.height).data;
                     d.sprite = Array();
                     for(var i = 0; i<<2 < pixels.length; i++){
