@@ -42,6 +42,7 @@ class Sententree:
     def __init__(self, dataDf, palabrasNecesarias, topic, numTopic,parent):
         self.tokens = Tokenize(dataDf)
         self.parent=parent
+        self.ocultar=False
         # rawTopic=self.getTopic(numTopic)
         self.nodosListID = []
         self.rawTopic=topic
@@ -162,6 +163,7 @@ class Sententree:
                     "label": palabraCorpus,
                     "rawText": str(topTweets),
                     "rawTextID": s0[:1],
+                    "numTopic":self.numTopic,
                     "size": len(s0),
                     "width": 1,
                     "height": 1
@@ -215,6 +217,7 @@ class Sententree:
             "label": label,
             "rawText": str(topTweets),
             "rawTextID": s0[:1],
+            "numTopic":self.numTopic,
             "size": len(s0),
             "width": 1,
             "height": 1
@@ -248,6 +251,8 @@ class Sententree:
 
     def getGrupos(self):
         indice=self.numTopic*(self.palabrasNecesarias+1)
+        if(self.ocultar):
+            return []
         if(not self.activate):
             grupos=[
                 {
@@ -339,7 +344,8 @@ class Sententree:
                 result.append({
                     "source": k,
                     "target": target,
-                    "leght":100
+                    "leght":100,
+                    "tipo":"sententree"
                 })
         #print("####################################################")
         """
@@ -434,6 +440,8 @@ class Sententree:
     def getNodes(self):
         nodosDict = []
         result = []
+        if(self.ocultar):
+            self.nodoRaiz.graphNodes[0]['label']=" "
         if(not self.activate):
             return self.nodoRaiz.graphNodes
 

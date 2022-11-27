@@ -91,6 +91,7 @@
     var graph = JSON.parse('{{data|tojson|safe}}');
     console.log(graph);
     var escogidos = [];
+    
     //------------------------------
     const width = document.querySelector("#sententreeTopicos").offsetWidth;
     const height = document.querySelector("#sententreeTopicos").offsetHeight;
@@ -106,16 +107,58 @@
         .attr("width", width)
         .attr("height", height);
 
+    var colors = ["#f94144","#f3722c","#f8961e","#f9844a","#9f86c0","#90be6d","#43aa8b","#4d908e","#577590","#277da1"];
+    /*
+    var domain=createDomain(100,colors.length)
+    var color=d3
+        .scale.linear()
+        .domain(domain)
+        .range(colors);
 
+    function createDomain(dataLength,colorsLength){
+        var domain = [0];
+        var toAdd = colorsLength - 2;
+        for(i = 1; i <= toAdd; i++) {
+            domain.push(Math.floor(dataLength * (i / (colorsLength - 1))));
+        }
+        domain.push(dataLength - 1);         
+        return domain;
+    }
+    */
     function renderLinks() {
         var link = svg
             .selectAll(".link")
             .data(graph.links)
             .enter().append("line")
             .attr("class", "link")
-            .style("stroke", "#bbbbbb")
-            .style("stroke-width", "5px");
+            .style("stroke", (d,i)=>{
+                if(d.tipo=="sententopic")
+                    return "#bbbbbb";
+                return "black"
+            })
+            .style("stroke-width", (d,i)=>{
+                if(d.tipo=="sententopic")
+                    return "5px";
+                return "2px";
+            });
         return link;
+    }
+    function renderNodes() {
+        var node = svg
+            .selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r",(d,i)=>{
+                if(d.label==" "){
+                    return 15;
+                }
+                return 0;
+            })
+            .call(d3cola.drag);
+            //.style("stroke", "#bbbbbb")
+            //.style("stroke-width", "5px");
+        return node;
     }
     function renderLabels() {
         var label = svg
@@ -128,7 +171,9 @@
             .text(function (d) { return d.label; })
             .style("font-size", (d) => { return d.fontSize + "%"; })
             .style("font-weight", "bolder")
-        //.style("fill","white")
+            .style("fill",(d,i)=>{
+                return colors[(d.numTopic%10)];
+            })
             .call(d3cola.drag);
 
         label.append("title").text(function (d) { return d.rawText; });
@@ -143,7 +188,10 @@
             .attr("rx", 8).attr("ry", 8)
             .attr("class", "group")
             .style("stroke-width", 3)
-            .style("stroke", "rgb(0,0,0)")
+            //.style("stroke", "rgb(0,0,0)")
+            .style("stroke",(d,i)=>{
+                return colors[(d.grupo%10)];
+            })
             .style("stroke-dasharray", 10)
             .style("fill-opacity", "0.0")
             .style("fill","rgb(125,0,0)")
@@ -154,7 +202,9 @@
                     console.log(escogidos);
                     d3
                         .select(this)
-                        .style("stroke", "rgb(0,0,0)")
+                        .style("stroke",(d,i)=>{
+                            return colors[(d.grupo%10)];
+                        })
 
                         .style("fill-opacity", "0.0");
                 }
@@ -184,14 +234,15 @@
             .start();
         
         var oldLinks=svg.selectAll(".link").remove();
-        var oldLinks=svg.selectAll(".label").remove();
-        var oldLinks=svg.selectAll(".group").remove();
+        var oldLabel=svg.selectAll(".label").remove();
+        var oldGroup=svg.selectAll(".group").remove();
+        var oldNode=svg.selectAll(".node").remove();
         /****crear nodos,links y grupos****/
         
         const link = renderLinks();
-        const group = renderGroups();
+        const node = renderNodes();
         const label = renderLabels();
-        
+        const group = renderGroups();
 
         /****Actualizar Nodos****/
         var d3Nodes = document.querySelectorAll(".label");
@@ -211,11 +262,20 @@
                 .attr("x", function (d) {
                     var w = this.getBBox().width;
                     return d.x - w / 2;
+                    //return d.x;
                 })
                 .attr("y", function (d) {
                     var h = this.getBBox().height;
                     return d.y;
                 });
+            //------------------------------------
+            node
+                .attr("cx",(d)=>{
+                    return d.x;
+                })
+                .attr("cy",(d)=>{
+                    return d.y;
+                })
             //------------------------------------
             link
                 .attr("x1", function (d, i) {

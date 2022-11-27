@@ -166,8 +166,8 @@ class Sententopic:
         # Nodo principal
         nodos.append(
             {
-                "label": "Sententopic",
-                "name": "Sententopic",
+                "label": " ",
+                "name": "-1",
                 "width": 60,
                 "heigth": 40
             }
@@ -212,7 +212,7 @@ class Sententopic:
                 continue
             nombreNodo = sententree.parent
             if (sententree.parent == -1):
-                nombreNodo = "Sententopic"
+                nombreNodo = "-1"
 
             #print(f"Sententopic source {nombreNodo}")
             #print(f"Sententopic target {sententree.nodosListID[0]}")
@@ -221,6 +221,7 @@ class Sententopic:
                     "source": nodosID.index(nombreNodo),
                     "target": nodosID.index(sententree.nodosListID[0]),
                     "lenght": 300,
+                    "tipo":"sententopic"
                 }
             )
             restricciones.append(
@@ -235,8 +236,13 @@ class Sententopic:
         # actualizar grupos
         print("------------")
         for grupo in grupos:
-            grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
-            print(grupo['leaves'])
+            newNodes=[]
+            for nodo in grupo['leaves']:
+                newNodes.append(nodosID.index(nodo))
+            grupo['leaves']=newNodes
+            #grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
+            
+
         result = {
             "nodes": nodos,
             "links": links,
