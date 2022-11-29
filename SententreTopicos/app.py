@@ -8,7 +8,7 @@ from flask import Flask, jsonify, render_template, request, redirect, url_for
 import sys
 
 df=pd.read_csv("data/#WWDCResultado.csv")
-arbol=Sententopic(df,5)
+arbol=Sententopic(df,4)
 """
 topico=0
 arbol2=Sententree(

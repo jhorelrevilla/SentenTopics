@@ -39,19 +39,14 @@
         <button onclick="crearSententree()">
             Mostrar/ocultar Sententree
         </button>
-    </div>
-    <div>
         <button onclick="eliminarNodo()">
             Eliminar
         </button>
-    </div>
-    <div>
         <button onclick="mezclarTopicos()">
             Mezclar
         </button>
     </div>
     <div>
-        Numero de topicos<br>
         <input id="numTopic" type="number" value="2" min="2" max="10">
         <button onclick="buscarTopicos()">
             Buscar topicos
@@ -108,6 +103,28 @@
         .attr("height", height);
 
     var colors = ["#f94144","#f3722c","#f8961e","#f9844a","#9f86c0","#90be6d","#43aa8b","#4d908e","#577590","#277da1"];
+    var filterDef=svg.append("defs");
+    var filter=filterDef
+    .append("filter")
+    .attr("x","0")
+    .attr("y","0")
+    .attr("width","1")
+    .attr("height","1")
+    .attr("id","solid");
+
+    filter.append("feFlood")
+    .attr("flood-color","white")
+    .attr("result","bg");
+
+    var filterMerge=filter.append("feMerge");
+
+    filterMerge.append("feMergeNode")
+    .attr("in","bg");
+
+    filterMerge.append("feMergeNode")
+    .attr("in","SourceGraphic");
+
+    
     /*
     var domain=createDomain(100,colors.length)
     var color=d3
@@ -134,13 +151,15 @@
             .style("stroke", (d,i)=>{
                 if(d.tipo=="sententopic")
                     return "#bbbbbb";
-                return "black"
+                //return "black";
+                return colors[(d.source.numTopic%10)]
             })
             .style("stroke-width", (d,i)=>{
                 if(d.tipo=="sententopic")
                     return "5px";
-                return "2px";
-            });
+                return "1px";
+            })
+            .call(d3cola.drag);
         return link;
     }
     function renderNodes() {
@@ -169,6 +188,7 @@
             .attr("class", "label")
             .attr('dy', '.28em')
             .text(function (d) { return d.label; })
+            //.style("filter","url(#solid)")
             .style("font-size", (d) => { return d.fontSize + "%"; })
             .style("font-weight", "bolder")
             .style("fill",(d,i)=>{
@@ -193,8 +213,8 @@
                 return colors[(d.grupo%10)];
             })
             .style("stroke-dasharray", 10)
-            .style("fill-opacity", "0.0")
-            .style("fill","rgb(125,0,0)")
+            //.style("fill-opacity", "0.0")
+            .style("fill","white")
             .on('click', function (d, i) {
                 if (escogidos.includes(d.grupo)) {
                     const index = escogidos.indexOf(d.grupo);
@@ -205,8 +225,8 @@
                         .style("stroke",(d,i)=>{
                             return colors[(d.grupo%10)];
                         })
-
-                        .style("fill-opacity", "0.0");
+                        .style("fill","white")
+                        .style("fill-opacity", "1");
                 }
                 else {
                     escogidos.push(d.grupo);
@@ -214,6 +234,7 @@
                     d3
                         .select(this)
                         .style("stroke", "rgb(125,0,0)")
+                        .style("fill","rgb(125,0,0)")
                         .style("fill-opacity", "0.25");
                 }
             })
@@ -223,14 +244,17 @@
     }
 
     function update() {
+        console.log(graph);
         d3cola
             .nodes(graph.nodes)
             .links(graph.links)
             .groups(graph.groups)
             .constraints(graph.constraints)
-            .flowLayout('x', 30)
-            //.linkDistance((d,i)=>d.lenght)
-            .jaccardLinkLengths((d, i) => d.lenght, 0.5)
+            
+            .flowLayout('x', 120)
+            //.linkDistance((d,i)=>{return d.length;})
+            //.linkDistance(70)
+            .jaccardLinkLengths((d,i)=>{return d.length;})
             .start();
         
         var oldLinks=svg.selectAll(".link").remove();
@@ -238,26 +262,33 @@
         var oldGroup=svg.selectAll(".group").remove();
         var oldNode=svg.selectAll(".node").remove();
         /****crear nodos,links y grupos****/
-        
+        const group = renderGroups();
         const link = renderLinks();
         const node = renderNodes();
         const label = renderLabels();
-        const group = renderGroups();
+        
 
         /****Actualizar Nodos****/
         var d3Nodes = document.querySelectorAll(".label");
         const bboxNodes = [];
-        for (var i = 0; i < d3Nodes.length; i++) {
-
+        for (let i = 0; i < d3Nodes.length; i++) {
+            if(graph.nodes[i].label==" "){
+                console.log("entre");
+                var circleBbox=node[0][i].getBBox();
+                graph.nodes[i].height = circleBbox.height;
+                graph.nodes[i].width = circleBbox.width;
+                continue;
+            }
             var labelBbox = d3Nodes[i].getBBox();
             bboxNodes.push(labelBbox);
             //console.log(labelBbox);
             graph.nodes[i].height = labelBbox.height + 2.0;
             graph.nodes[i].width = labelBbox.width + 2.0;
         }
+
         /****d3 tick****/
         d3cola.on("tick", function () {
-
+            var groupGap=5;
             label
                 .attr("x", function (d) {
                     var w = this.getBBox().width;
@@ -271,6 +302,9 @@
             //------------------------------------
             node
                 .attr("cx",(d)=>{
+                    if(d.label==" "){
+                        return d.x+14;
+                    }
                     return d.x;
                 })
                 .attr("cy",(d)=>{
@@ -286,7 +320,7 @@
                     else{
                         return d.source.x-(anchos[i]/2)-gap;
                     }*/
-                    return d.source.x;
+                    return d.source.x+(d.source.width/2);
                 })
                 .attr("y1", function (d, i) {
                     return d.source.y;
@@ -298,10 +332,17 @@
                     else{
                         return d.target.x+(anchos[i*2]/2)+gap;
                     }*/
-                    return d.target.x;
+                    if(d.tipo=="sententopic"){
+                        //return d.target.x;
+                        //return d.target.parent.bounds.x+(d.target.parent.bounds.width()/2);
+                        if(!d.target.parent){
+                            return d.target.x;
+                        }
+                        return d.target.parent.bounds.x;
+                    }
+                    return d.target.x-(d.target.width/2);
                 })
                 .attr("y2", function (d) {
-
                     return d.target.y;
                 });
             //------------------------------------

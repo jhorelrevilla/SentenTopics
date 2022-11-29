@@ -39,7 +39,8 @@ class Tokenize:
 
 
 class Sententree:
-    def __init__(self, dataDf, palabrasNecesarias, topic, numTopic,parent):
+    def __init__(self, dataDf, palabrasNecesarias, topic, numTopic,parent,numTotalDf):
+        
         self.tokens = Tokenize(dataDf)
         self.parent=parent
         self.ocultar=False
@@ -50,7 +51,7 @@ class Sententree:
         self.numTopic = numTopic
         self.palabrasNecesarias=palabrasNecesarias
         # nodo=getNodo
-        self.maxFont = 200
+        self.maxFont = 150+((dataDf.shape[0]*400)/numTotalDf)
         self.minFont = 90
         self.maxBdSize = 0
         # crear nodo a partir de la palabra con mayor apoyo
@@ -58,6 +59,13 @@ class Sententree:
         # self.topic.remove(self.nodoRaiz.seq[0])
         self.activate=False
         self.visible=True
+
+        print("-"*20)
+        print(f"Sententree con un df de tamanio {dataDf.shape[0]}")
+        print(f"Con los topicos {topic}")
+        print(f"topicos tokenizados{self.topic}")
+        print("-"*20)
+
         self.leafNodes = self.generacionPatrones(
             self.nodoRaiz, palabrasNecesarias)
     # ------------------------------------------------------------------------------------
@@ -76,6 +84,8 @@ class Sententree:
     def tokenizarTopic(self, rawTopic):
         result = []
         for word in rawTopic:
+            if(word not in self.tokens.itemset):
+                continue
             result.append(str(self.tokens.itemset[word]))
         return result
     # ------------------------------------------------------------------------------------
@@ -84,9 +94,13 @@ class Sententree:
         s0 = []
         s1 = []
         bdDict = {}
+        
         # cuenta el numero de token
         for tweetId in s.DB:
             for token in self.tokens.data['tokens'][int(tweetId)].split():
+                # evita palabras de la secuencia
+                if token in s.seq:
+                    continue
                 if token in bdDict:
                     bdDict[token] += 1
                 else:
@@ -94,19 +108,15 @@ class Sententree:
 
         # Escoger palabras del topico
         word = None
-        if (len(s.seq) > 1):
-            # evita palabras de la secuencia
-            #print(f"tam seq {len(s.seq)}")
-            if (len(s.seq) > 0):
-                for wordSeq in s.seq:
-                    if wordSeq in bdDict:
-                        bdDict.pop(wordSeq)
+        
+        topicDict = {}
+        for wordTopic in self.topic:
+            if wordTopic in bdDict:
+                topicDict[wordTopic] = bdDict[wordTopic]
+        if(len(topicDict)==0):
             word = str(max(bdDict, key=lambda x: bdDict[x]))
         else:
-            topicDict = {}
-            for wordTopic in self.topic:
-                if wordTopic in bdDict:
-                    topicDict[wordTopic] = bdDict[wordTopic]
+            print(topicDict)
             word = str(max(topicDict, key=lambda x: topicDict[x]))
 
         # divide la bd
@@ -344,7 +354,6 @@ class Sententree:
                 result.append({
                     "source": k,
                     "target": target,
-                    "leght":100,
                     "tipo":"sententree"
                 })
         #print("####################################################")
@@ -417,10 +426,9 @@ class Sententree:
         restriccionXTarget = {}
         for link in self.getLinks():
             constrait = {
-                "axis": "x",
                 "left": link["source"],
                 "right": link["target"],
-                "gap": 110
+                "tipo":"Sententree"
             }
             result.append(constrait)
             if (link['source'] in restriccionXSource):
