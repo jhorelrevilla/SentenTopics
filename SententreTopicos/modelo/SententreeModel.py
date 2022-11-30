@@ -54,6 +54,9 @@ class Sententree:
         self.maxFont = 150+((dataDf.shape[0]*400)/numTotalDf)
         self.minFont = 90
         self.maxBdSize = 0
+
+        self.maxIteracion=0
+
         # crear nodo a partir de la palabra con mayor apoyo
         self.nodoRaiz = self.getNodeTopic(dataDf)
         # self.topic.remove(self.nodoRaiz.seq[0])
@@ -116,7 +119,7 @@ class Sententree:
         if(len(topicDict)==0):
             word = str(max(bdDict, key=lambda x: bdDict[x]))
         else:
-            print(topicDict)
+            #print(topicDict)
             word = str(max(topicDict, key=lambda x: topicDict[x]))
 
         # divide la bd
@@ -171,7 +174,7 @@ class Sententree:
                     "name": f"{self.numTopic}-{palabrasNecesarias}",
                     "fontSize": fontSize,
                     "label": palabraCorpus,
-                    "rawText": str(topTweets),
+                    "rawText": str(topTweets[0]),
                     "rawTextID": s0[:1],
                     "numTopic":self.numTopic,
                     "size": len(s0),
@@ -225,7 +228,7 @@ class Sententree:
             "name": f"{self.numTopic}-0",
             "fontSize": self.maxFont,
             "label": label,
-            "rawText": str(topTweets),
+            "rawText": str(topTweets[0]),
             "rawTextID": s0[:1],
             "numTopic":self.numTopic,
             "size": len(s0),
@@ -284,7 +287,29 @@ class Sententree:
 
         return grupos
     # ------------------------------------------------------------------------------------
+    def romperCiclos(self,grafo,nodo,visitados,ciclo):
+        #print("-"*5)
+        #print(f"visitando {nodo}")
+        if nodo not in grafo:
+            return False
+        visitados.append(nodo)
+        #print(f"recorrer {grafo[nodo]}")
 
+        for links in grafo[nodo]:
+            if(links in visitados):
+                return True
+            if(self.romperCiclos(grafo,links,visitados,ciclo)):
+                ciclo[nodo]=links
+            """
+            if links in visitados:
+                print(f"{links} esta en {visitados}")
+                print(f"eliminando a {links}")
+                enlaces=list(grafo[nodo])
+                enlaces.remove(links)
+                grafo[nodo]=enlaces
+                print(f"'{nodo}': {grafo[nodo]}")
+            """
+    # ------------------------------------------------------------------------------------
     def getLinks(self):
         result = []
         dicSeq = {}
@@ -348,7 +373,23 @@ class Sententree:
             else:
               if target not in grafo[source]:
                 grafo[source].append(target)
-        #print(f"grafo {grafo}")
+        #-------------elimina ciclos
+        print("*"*10)
+        print(f"grafo\n{grafo}")
+        
+
+        #print(f"NUEVO GRAFO\n{self.romperCiclos(grafo,list(grafo.keys())[0],[],ciclos)} ")
+        
+        for k in grafo.keys():
+            ciclos={}
+            self.romperCiclos(grafo,k,[],ciclos)
+            print(f"ciclos {ciclos}")
+            for k,v in ciclos.items():
+                lista=list(grafo[k])
+                print(f"lista {lista}")
+                lista.remove(v)
+                grafo[k]=lista
+        #-------------genera enlaces a partir del grafo
         for k, v in grafo.items():
           for target in v:
                 result.append({
@@ -356,67 +397,8 @@ class Sententree:
                     "target": target,
                     "tipo":"sententree"
                 })
-        #print("####################################################")
-        """
-        for secuencia in secuencias:
-          for seq in secuencia:
-            print("--------------------------")
-            # consigue el tweet mas valioso de
-            topTweetId = seq.graphNodes[-1]['rawTextID'][0]
-            # almacena los tokens
-            topTweet = self.tokens.data['tokens'][int(topTweetId)].split()
-
-            #print (f"topTweet {topTweet}")
-            tempo = {}
-            # recorre la secuencia y ordena las palabras en el orden que aparecen
-            for nodo in seq.graphLinks:
-                #            Posicion palabra % tam links
-                #tempo[nodo]=topTweet.index(nodo) % (len(seq.graphLinks)+1)
-                tempo[nodo] = topTweet.index(nodo)
-            #print(f"tempo {tempo}")
-            tempo = {k: v for k, v in sorted(
-                tempo.items(), key=lambda item: item[1])}
-            print(f"orden que aparecen {tempo}")
-
-            print(f"seq.graphLinks {seq.graphLinks}")
-
-            # genera los enlaces con las palabras seguidas
-            for palabra in range(1, len(seq.seq)):
-
-                source = list(tempo.keys())[palabra-1]
-                source = seq.graphLinks[source]
-
-                target = list(tempo.keys())[palabra]
-                target = seq.graphLinks[target]
-
-                print(f"source {source}")
-                
-            result.append(
-              {
-                "source":self.getNodePos(source),
-                "target":self.getNodePos(target)
-              }
-            )
-        
-                if source not in dicSeq:
-                    dicSeq[source] = [target]
-                else:
-                    if target not in dicSeq[source]:
-                        dicSeq[source].append(target)
-
-        # print(json.dumps(result))
-        # print("----------------")
-        #print(dicSeq)
-
-        for k, v in dicSeq.items():
-            for target in v:
-                result.append(
-                    {
-                        "source": self.getNodePos(k),
-                        "target": self.getNodePos(target)
-                    }
-                )
-        """
+        print(f"result {result}")
+        #print("####################################################"
         return result
     # ------------------------------------------------------------------------------------
 

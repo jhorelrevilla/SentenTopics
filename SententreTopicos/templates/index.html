@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<style>
+<style>    
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
     #sententreeTopicos {
+        /*
         border-style: solid;
         border-width: 2px;
         border-color: black;
+        */
         padding: 0%;
         margin: 0%;
         height: 90vh;
-        width: 80vw;
+        width: 100vw;
     }
+
 
     .group {
         cursor: grab;
@@ -19,6 +23,10 @@
     }
     #numTopic{
         width: 50px;
+    }
+    .detalles{
+        font-family: 'Open Sans', sans-serif;
+        font-weight: bolder;
     }
 </style>
 <!----------------->
@@ -94,6 +102,14 @@
     const d3cola = cola.d3adaptor()
         .avoidOverlaps(true)
         .size([width, height]);
+
+    var detalles=d3
+        .select('#sententreeTopicos')
+        .append('div')
+        .attr('class','detalles')
+        .attr('id','tooltip')
+        .style('position','relative ')
+        .style('opacity',0);
 
     const svg = d3
         .select("#sententreeTopicos")
@@ -187,6 +203,7 @@
             .append("text")
             .attr("class", "label")
             .attr('dy', '.28em')
+            .attr('index',(d,i)=>i)
             .text(function (d) { return d.label; })
             //.style("filter","url(#solid)")
             .style("font-size", (d) => { return d.fontSize + "%"; })
@@ -194,6 +211,8 @@
             .style("fill",(d,i)=>{
                 return colors[(d.numTopic%10)];
             })
+            .on('mouseover',mouseEncima)
+            .on('mouseout',mouseAfuera)
             .call(d3cola.drag);
 
         label.append("title").text(function (d) { return d.rawText; });
@@ -243,6 +262,26 @@
         return group;
     }
 
+    function mouseEncima(event,d){
+        detalles.style('opacity',0.92);
+        var i=this.getAttribute('index');
+        detalles
+        .html(
+            'Tweet: '+graph.nodes[i].rawText
+        )
+        .style('left', 0+ 'px')
+        .style('top', 0 + 'px')
+        .style('background-color',function(){
+            return '#1DA0F1';
+        });
+    }
+
+    function mouseAfuera(data){
+        detalles
+        .style('opacity',0)
+        .style('left', -1 + 'px')
+        .style('top', -3 + 'px');
+    }
     function update() {
         console.log(graph);
         d3cola

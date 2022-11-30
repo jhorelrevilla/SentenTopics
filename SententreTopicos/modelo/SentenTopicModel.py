@@ -13,7 +13,7 @@ class Sententopic:
         self.crearSententreePerTopics(
             df=dataDf,
             numTopics=10,
-            parent=-1
+            parent='root' 
         )
         """
         self.topicList = self.getTopicList()
@@ -68,23 +68,40 @@ class Sententopic:
         df = self.SententreeList[SententreeID].tokens.data.copy()
         if (df.shape[0] <= 50):
             return
+        self.SententreeList[SententreeID].activate=False
         self.crearSententreePerTopics(
             df,
             numTopics,
             self.SententreeList[SententreeID].nodosListID[0])
     # -------------------------------------------------------
+    def getNumeroTopico(self,nodo):
+        if (self.SententreeList[nodo].parent =="root"):
+            return -1
+        else:
+            return int(str(self.SententreeList[nodo].parent).split('-')[0])
 
+    # -------------------------------------------------------
     def mezclarTopicos(self, nodosEscogidos):
         dfEscogidos = []
-        nodoMenor = 999
+        nodoMenor = self.getNumeroTopico(nodosEscogidos[0])
         topicosEscogidos=[]
         print("PRIMERO")
+
         for nodo in nodosEscogidos:
             #juntar df
             dfEscogidos.append(self.SententreeList[nodo].tokens.data.copy())
             #buscar el nodo padre menor
-            if (self.SententreeList[nodo].parent < nodoMenor):
-                nodoMenor = self.SententreeList[nodo].parent
+            print(f"PADRE {self.SententreeList[nodo].parent}")
+            nodoPadre=self.getNumeroTopico(nodo)
+
+            print(f"nodoPadre {type(nodoPadre)} -> {nodoPadre}")
+            print(f"nodoMenor {type(nodoMenor)} -> {nodoMenor}")
+
+            if (nodoPadre < nodoMenor):
+                nodoMenor = nodoPadre
+
+
+
             #juntar topicos
             for palabra in self.SententreeList[nodo].rawTopic:
                 if(palabra in topicosEscogidos):
@@ -102,7 +119,7 @@ class Sententopic:
                 palabrasNecesarias=self.numPalabrasPerTopic,
                 topic=topicosEscogidos,
                 numTopic=len(self.SententreeList),
-                parent=nodoMenor,
+                parent=self.SententreeList[nodoMenor].parent,
                 numTotalDf=dfMezclado.shape[0]
             ))
         #print("TERCERO")
@@ -174,7 +191,7 @@ class Sententopic:
             if not sententree.visible:
                 continue
             nombreNodo = sententree.parent
-            if (sententree.parent == -1):
+            if (sententree.parent == 'root'):
                 nombreNodo = "Sententopic"
 
             #print(f"Sententopic source {nombreNodo}")
