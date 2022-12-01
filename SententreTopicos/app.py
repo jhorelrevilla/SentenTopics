@@ -6,9 +6,12 @@ from modelo.SentenTopicModel import Sententopic
 from modelo.SententreeModel import Sententree
 from flask import Flask, jsonify, render_template, request, redirect, url_for
 import sys
+import time
 
-df=pd.read_csv("data/#WWDCResultado.csv")
+df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
+start_time = time.time()
 arbol=Sententopic(df,10)
+print(f"Tiempo: {time.time() - start_time} segundos")
 """
 topico=0
 arbol2=Sententree(
