@@ -8,59 +8,14 @@ from flask import Flask, jsonify, render_template, request, redirect, url_for
 import sys
 import time
 
-df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
+#df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
+#df=pd.read_csv("data/#texasResultado.csv",lineterminator='\n')
+df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
+
+
 start_time = time.time()
 arbol=Sententopic(df,10)
 print(f"Tiempo: {time.time() - start_time} segundos")
-"""
-topico=0
-arbol2=Sententree(
-    arbol.SententopicDfList[topico],
-    1,
-    arbol.topicList[topico],
-    0)
-""" 
-
-
-
-#rawData=arbol2.getData()
-#arbol.printSententopic()
-
-
-
-
-rawData2 = {
-    "nodes": [
-        {"label": "0", "width": 60, "height": 40, "group":1},
-        {"label": "1", "width": 60, "height": 40, "group":1},
-        {"label": "el pepe", "width": 60, "height": 40, "group":1},
-        {"label": "3", "width": 60, "height": 40, "group":1},
-        {"label": "4", "width": 60, "height": 40, "group":1}
-    ],
-    "links": [
-        {"source": 0, "target": 2},
-        {"source": 1, "target": 2},
-        {"source": 3, "target": 2},
-        {"source": 2, "target": 4}
-    ],
-    "constraints": [
-        {
-            "axis":"x",
-            "left":2,
-            "right":1,
-            "gap":30
-        },
-        {
-            "axis":"x",
-            "left":2,
-            "right":4,
-            "gap":30
-        }
-    ],
-    "groups":[
-        {"leaves":[0,1,2,3,4]}
-    ]
-}
 
 
 app = Flask(__name__)

@@ -51,7 +51,7 @@ class Sententree:
         self.numTopic = numTopic
         self.palabrasNecesarias=palabrasNecesarias
         # nodo=getNodo
-        self.maxFont = 150+((dataDf.shape[0]*400)/numTotalDf)
+        self.maxFont = 150+((dataDf.shape[0]*150)/numTotalDf)
         self.minFont = 90
         self.maxBdSize = 0
 

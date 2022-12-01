@@ -313,9 +313,13 @@
         for (let i = 0; i < d3Nodes.length; i++) {
             if(graph.nodes[i].label==" "){
                 console.log("entre");
+                /*
                 var circleBbox=node[0][i].getBBox();
                 graph.nodes[i].height = circleBbox.height;
                 graph.nodes[i].width = circleBbox.width;
+                */
+                graph.nodes[i].height = 90;
+                graph.nodes[i].width = 60;
                 continue;
             }
             var labelBbox = d3Nodes[i].getBBox();
