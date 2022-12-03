@@ -50,8 +50,9 @@ class Sententree:
         self.topic = self.tokenizarTopic(topic)
         self.numTopic = numTopic
         self.palabrasNecesarias=palabrasNecesarias
+        self.name=f"{self.numTopic}-0"
         # nodo=getNodo
-        self.maxFont = 150+((dataDf.shape[0]*150)/numTotalDf)
+        self.maxFont = 200+((dataDf.shape[0]*200)/numTotalDf)
         self.minFont = 90
         self.maxBdSize = 0
 
@@ -66,7 +67,8 @@ class Sententree:
         print("-"*20)
         print(f"Sententree con un df de tamanio {dataDf.shape[0]}")
         print(f"Con los topicos {topic}")
-        print(f"topicos tokenizados{self.topic}")
+        print(f"topicos tokenizados {self.topic}")
+        print(f"padre {parent}")
         print("-"*20)
 
         self.leafNodes = self.generacionPatrones(
@@ -225,7 +227,7 @@ class Sententree:
                      [int(tweetId)] for tweetId in s0[:1]]
         label = list(self.tokens.itemset.keys())[int(word)]
         nodoJson = {
-            "name": f"{self.numTopic}-0",
+            "name": self.name,
             "fontSize": self.maxFont,
             "label": label,
             "rawText": str(topTweets[0]),
@@ -374,8 +376,8 @@ class Sententree:
               if target not in grafo[source]:
                 grafo[source].append(target)
         #-------------elimina ciclos
-        print("*"*10)
-        print(f"grafo\n{grafo}")
+        #print("*"*10)
+        #print(f"grafo\n{grafo}")
         
 
         #print(f"NUEVO GRAFO\n{self.romperCiclos(grafo,list(grafo.keys())[0],[],ciclos)} ")
@@ -383,10 +385,10 @@ class Sententree:
         for k in grafo.keys():
             ciclos={}
             self.romperCiclos(grafo,k,[],ciclos)
-            print(f"ciclos {ciclos}")
+            #print(f"ciclos {ciclos}")
             for k,v in ciclos.items():
                 lista=list(grafo[k])
-                print(f"lista {lista}")
+                #print(f"lista {lista}")
                 lista.remove(v)
                 grafo[k]=lista
         #-------------genera enlaces a partir del grafo
@@ -397,7 +399,7 @@ class Sententree:
                     "target": target,
                     "tipo":"sententree"
                 })
-        print(f"result {result}")
+        #print(f"result {result}")
         #print("####################################################"
         return result
     # ------------------------------------------------------------------------------------

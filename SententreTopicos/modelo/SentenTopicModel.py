@@ -3,6 +3,7 @@
 import pandas as pd
 from modelo.SententreeModel import Sententree
 from modelo.seanmfTopic import extractTopics
+from anytree import Node
 import json
 
 
@@ -10,30 +11,13 @@ class Sententopic:
     def __init__(self, dataDf, numPalabrasPerTopic):
         self.SententreeList = list()
         self.numPalabrasPerTopic = numPalabrasPerTopic
+        self.nodosID=[]
         self.crearSententreePerTopics(
             df=dataDf,
             numTopics=10,
             parent='root' 
         )
-        """
-        self.topicList = self.getTopicList()
-        self.numPalabrasPerTopic = numPalabrasPerTopic
-        dataDf['topico'] = dataDf.apply(
-            lambda x: self.dividirDfTopicos(x.tweetFiltrado, topicList), axis=1)
-
-        self.SententopicDfList = self.createSententopicDf(dataDf)
-        self.SententreeList = []
-
-        for i in range(len(self.SententopicDfList)):
-            self.SententreeList.append(
-                Sententree(
-                    dataDf=self.SententopicDfList[i],
-                    palabrasNecesarias=numPalabrasPerTopic,
-                    topic=self.topicList[i],
-                    numTopic=i,
-                    parent=-1
-                ))
-        """
+        
     # -------------------------------------------------------
 
     def crearSententreePerTopics(self, df, numTopics, parent):
@@ -53,6 +37,7 @@ class Sententopic:
         #  print(f"{i.shape[0]}")
 
         for i in range(len(dfList)):
+            print(f"creando Sententree con {dfList[i].shape[0]}")
             self.SententreeList.append(
                 Sententree(
                     dataDf=dfList[i],
@@ -62,13 +47,14 @@ class Sententopic:
                     parent=parent,
                     numTotalDf=numTweets
                 ))
+            self.nodosID.append(self.SententreeList[-1].name)
     # -------------------------------------------------------
 
     def expandirNodo(self, SententreeID, numTopics):
         df = self.SententreeList[SententreeID].tokens.data.copy()
         if (df.shape[0] <= 50):
             return
-        self.SententreeList[SententreeID].activate=False
+        #self.SententreeList[SententreeID].activate=False
         self.crearSententreePerTopics(
             df,
             numTopics,
@@ -83,10 +69,11 @@ class Sententopic:
     # -------------------------------------------------------
     def mezclarTopicos(self, nodosEscogidos):
         dfEscogidos = []
+        #nodoMenor = self.SententreeList[nodosEscogidos[0]].parent
         nodoMenor = self.getNumeroTopico(nodosEscogidos[0])
         topicosEscogidos=[]
-        print("PRIMERO")
-
+        print("INICIANDO MEZCLAR TOPICOS")
+        print(f"nodos escogidos {nodosEscogidos}")
         for nodo in nodosEscogidos:
             #juntar df
             dfEscogidos.append(self.SententreeList[nodo].tokens.data.copy())
@@ -108,24 +95,39 @@ class Sententopic:
                     continue
                 topicosEscogidos.append(palabra)
             #ocultar topico
+
+        #if nodoMenor in nodosEscogidos:
+        #    nodosEscogidos.remove(nodoMenor)
+
+        for nodo in nodosEscogidos:
+            print(f"Borrando {nodo}")
             self.SententreeList[nodo].visible=False
 
+        
         dfMezclado = pd.concat(dfEscogidos)
         dfMezclado.reset_index(drop=True, inplace=True)
         dfMezclado.sort_values(by=['likes_count'], ascending=False)
+
+        parentID=self.SententreeList[nodoMenor].parent
+        if nodoMenor==-1:
+            parentID="root"
+        print(f"nodo menor {nodoMenor} padre {parentID}")
         self.SententreeList.append(
             Sententree(
                 dataDf=dfMezclado,
                 palabrasNecesarias=self.numPalabrasPerTopic,
                 topic=topicosEscogidos,
                 numTopic=len(self.SententreeList),
-                parent=self.SententreeList[nodoMenor].parent,
+                parent=parentID,
                 numTotalDf=dfMezclado.shape[0]
             ))
+        self.nodosID.append(self.SententreeList[-1].name)
         #print("TERCERO")
+
+        nodosEscogidos=[f"{nodo}-0" for nodo in nodosEscogidos]
         for nodo in range(len(self.SententreeList)-1):
             if self.SententreeList[nodo].parent in nodosEscogidos:
-                self.SententreeList[nodo].parent=len(self.SententreeList)-1
+                self.SententreeList[nodo].parent=self.SententreeList[-1].name
     # -------------------------------------------------------
 
     def dividirDfTopicos(self, tweet, topicList):
@@ -175,6 +177,7 @@ class Sententopic:
         # nodos de los Sententree
         for sententree in self.SententreeList:
             if not sententree.visible:
+                print(f"nodo no visible: {sententree.numTopic}")
                 continue
             nodos.extend(sententree.getNodes())
             links.extend(sententree.getLinks())
@@ -184,18 +187,22 @@ class Sententopic:
         for nodo in nodos:
             nodosID.append(nodo['name'])
 
+        print(nodosID)
+
         # LINKS Y RESTRICCIONES DEL SENTENTOPIC
         sententopicLinks=[]
         SententopicRestricciones=[]
         for sententree in self.SententreeList:
+            print(f"enlaces para {sententree.name}")
+
             if not sententree.visible:
                 continue
             nombreNodo = sententree.parent
             if (sententree.parent == 'root'):
                 nombreNodo = "Sententopic"
 
-            #print(f"Sententopic source {nombreNodo}")
-            #print(f"Sententopic target {sententree.nodosListID[0]}")
+            print(f"Sententopic source {nombreNodo}")
+            print(f"Sententopic target {sententree.nodosListID[0]}")
             sententopicLinks.append(
                 {
                     "source": nodosID.index(nombreNodo),

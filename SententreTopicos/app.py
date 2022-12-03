@@ -61,7 +61,7 @@ def buscarTopicos():
     escogidos=[int(i) for i in request.form.getlist('escogidos[]')]
     numeroTopicos=request.form.get('numeroTopicos')
     for topico in escogidos:
-        arbol.SententreeList[topico].ocultar=True
+        #arbol.SententreeList[topico].ocultar=True
         arbol.expandirNodo(topico,int(numeroTopicos))
         #arbol.SententreeList[topico].visible=False
     rawData=arbol.getDataJson()

@@ -363,6 +363,16 @@
                     else{
                         return d.source.x-(anchos[i]/2)-gap;
                     }*/
+                    if(d.tipo=="sententopic"){
+                        //return d.target.x;
+                        //return d.target.parent.bounds.x+(d.target.parent.bounds.width()/2);
+                        if(!d.source.parent){
+                            //NODO CENTRAL
+                            return d.source.x;
+                        }
+                        //LOS DEMAS NODOS
+                        return d.source.parent.bounds.X;
+                    }
                     return d.source.x+(d.source.width/2);
                 })
                 .attr("y1", function (d, i) {
