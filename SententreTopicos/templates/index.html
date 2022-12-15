@@ -12,7 +12,9 @@
         height: 90vh;
         width: 100vw;
     }
-
+    #toolBar{
+        height: 8vh;
+    }
 
     .group {
         cursor: grab;
@@ -43,7 +45,7 @@
 </head>
 
 <body>
-    <div>
+    <div id="toolBar">
         <button onclick="crearSententree()">
             Mostrar/ocultar Sententree
         </button>
@@ -53,13 +55,14 @@
         <button onclick="mezclarTopicos()">
             Mezclar
         </button>
+        <div>
+            <input id="numTopic" type="number" value="2" min="2" max="10">
+            <button onclick="buscarTopicos()">
+                Buscar topicos
+            </button>
+        </div>
     </div>
-    <div>
-        <input id="numTopic" type="number" value="2" min="2" max="10">
-        <button onclick="buscarTopicos()">
-            Buscar topicos
-        </button>
-    </div>
+    
     <div id="sententreeTopicos"></div>
 </body>
 <!----------------------------------------------->
@@ -92,10 +95,88 @@
     };
     */
     var graph = JSON.parse('{{data|tojson|safe}}');
-    console.log(graph);
+    //console.log(graph);
     var escogidos = [];
+    //----------------------------------------------------  HERRAMIENTAS
+    function crearSententree() {
+        if(escogidos.lenght){
+            return
+        }
+        //console.log("ESCOGIDOS " + escogidos);
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('crearSententree')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[]
+            }
+        })
+
+    }
+
+    function eliminarNodo(){
+        if(escogidos.lenght){
+            return
+        }
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('eliminarNodo')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[]
+            }
+        })
+    }
     
-    //------------------------------
+    function buscarTopicos(){
+        var valor=document.querySelector("#numTopic").value;
+        if(escogidos.lenght){
+            return
+        }
+        console.log("enviando buscarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('buscarTopicos')}}",
+            data: { 
+                "escogidos": escogidos,
+                "numeroTopicos":valor
+            },
+            success: function (result) {
+                //console.log("GAAAAAAAAAA")
+                //console.log(result);
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos=[];
+            }
+        })
+    }
+    
+    function mezclarTopicos(){
+        if(escogidos.lenght<2){
+            return
+        }
+        console.log("enviando mezclarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('mezclarTopicos')}}",
+            data: { 
+                "escogidos": escogidos
+            },
+            success: function (result) {
+                graph = result;
+                update();
+                escogidos=[];
+            }
+        })
+    }
+    //----------------------------------------------------  VISUALIZACION
     const width = document.querySelector("#sententreeTopicos").offsetWidth;
     const height = document.querySelector("#sententreeTopicos").offsetHeight;
 
@@ -118,7 +199,8 @@
         .attr("width", width)
         .attr("height", height);
 
-    var colors = ["#f94144","#f3722c","#f8961e","#f9844a","#9f86c0","#90be6d","#43aa8b","#4d908e","#577590","#277da1"];
+    //var colors = ["#f94144","#f3722c","#f8961e","#f9844a","#9f86c0","#90be6d","#43aa8b","#4d908e","#577590","#277da1"];
+    var colors = ["#1F77B4","#FF7F0E","#2CA02C","#D62728","#9467BD","#8C564B","#E377C2","#7F7F7F","#BCBD22","#17BECF"];
     var filterDef=svg.append("defs");
     var filter=filterDef
     .append("filter")
@@ -267,7 +349,7 @@
         var i=this.getAttribute('index');
         detalles
         .html(
-            'Tweet: '+graph.nodes[i].rawText
+            'TWEET :'+graph.nodes[i].rawText+' ❤️'+graph.nodes[i].size
         )
         .style('left', 0+ 'px')
         .style('top', 0 + 'px')
@@ -284,17 +366,20 @@
     }
     function update() {
         console.log(graph);
+
         d3cola
             .nodes(graph.nodes)
             .links(graph.links)
             .groups(graph.groups)
             .constraints(graph.constraints)
             
+            .symmetricDiffLinkLengths(20)
+            .jaccardLinkLengths((d,i)=>{return d.jaccard;})
+            .linkDistance((d,i)=>{return d.distance;})
+            //.jaccardLinkLengths(10)
+            //.linkDistance(5)
             .flowLayout('x', 120)
-            //.linkDistance((d,i)=>{return d.length;})
-            //.linkDistance(70)
-            .jaccardLinkLengths((d,i)=>{return d.length;})
-            .start();
+            .start(10,10,10);
         
         var oldLinks=svg.selectAll(".link").remove();
         var oldLabel=svg.selectAll(".label").remove();
@@ -312,7 +397,7 @@
         const bboxNodes = [];
         for (let i = 0; i < d3Nodes.length; i++) {
             if(graph.nodes[i].label==" "){
-                console.log("entre");
+                //console.log("entre");
                 /*
                 var circleBbox=node[0][i].getBBox();
                 graph.nodes[i].height = circleBbox.height;
@@ -328,6 +413,10 @@
             graph.nodes[i].height = labelBbox.height + 2.0;
             graph.nodes[i].width = labelBbox.width + 2.0;
         }
+        /****Actualizar Links****/
+        //N/A
+        /****Actualizar Constraits****/
+        graph.constraints[0].gap=500;
 
         /****d3 tick****/
         d3cola.on("tick", function () {
@@ -346,7 +435,7 @@
             node
                 .attr("cx",(d)=>{
                     if(d.label==" "){
-                        return d.x+14;
+                        return d.x;
                     }
                     return d.x;
                 })
@@ -414,198 +503,12 @@
         });
     }
 
-    // Main 
+    //----------------------------------------------------  Main 
+    //console.time('visualizacion');
+    var start=performance.now();
     update();
-    //----------------------------------------------------
-    function crearSententree() {
-        if(escogidos.lenght){
-            return
-        }
-        //console.log("ESCOGIDOS " + escogidos);
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('crearSententree')}}",
-            data: { "escogidos": escogidos },
-            success: function (result) {
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos=[]
-            }
-        })
-
-    }
-    //----------------------------------------------------
-    function eliminarNodo(){
-        if(escogidos.lenght){
-            return
-        }
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('eliminarNodo')}}",
-            data: { "escogidos": escogidos },
-            success: function (result) {
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos=[]
-            }
-        })
-    }
-    //----------------------------------------------------
-    function buscarTopicos(){
-        var valor=document.querySelector("#numTopic").value;
-        if(escogidos.lenght){
-            return
-        }
-        console.log("enviando buscarTopicos")
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('buscarTopicos')}}",
-            data: { 
-                "escogidos": escogidos,
-                "numeroTopicos":valor
-            },
-            success: function (result) {
-                //console.log("GAAAAAAAAAA")
-                //console.log(result);
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos=[];
-            }
-        })
-    }
-    //----------------------------------------------------
-    function mezclarTopicos(){
-        if(escogidos.lenght<2){
-            return
-        }
-        console.log("enviando mezclarTopicos")
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('mezclarTopicos')}}",
-            data: { 
-                "escogidos": escogidos
-            },
-            success: function (result) {
-                graph = result;
-                update();
-                escogidos=[];
-            }
-        })
-    }
-    /*
-    document.querySelector("#sententreeTopicos").offsetHeight;
-
-    var width = document.querySelector("#sententreeTopicos").offsetWidth;
-    height = document.querySelector("#sententreeTopicos").offsetHeight;
-
-
-    var d3cola = cola.d3adaptor()
-        .avoidOverlaps(true)
-        .size([width, height]);
-
-    var svg = d3
-        .select("#sententreeTopicos")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    d3cola
-        .nodes(graph.nodes)
-        .links(graph.links)
-        .constraints(graph.constraints)
-        .flowLayout('x', 90)
-        .linkDistance(90)
-        .jaccardLinkLengths(1)
-        .start(10, 10, 10);
-
-
-    var link = svg.selectAll(".link")
-        .data(graph.links)
-        .enter().append("line")
-        .attr("class", "link")
-        .style("stroke", "red");
-
-    var node = svg
-        .selectAll(".node")
-        .data(graph.nodes)
-        .enter()
-        .append("rect")
-        .attr("class", "node")
-        .attr("width", function (d) {
-            var sizePalabra = d.name;
-            return sizePalabra.length * 10.5;
-        })
-        .attr("height", function (d) {
-            var sizePalabra = d.name;
-            return sizePalabra.length * 4;
-        })
-        .style("fill", "white")
-        .style("stroke-width", "2")
-        .style("stroke", "white")
-        .call(d3cola.drag);
-
-
-    var label = svg
-        .selectAll(".label")
-        .data(graph.nodes)
-        .enter()
-        .append("text")
-        .attr("class", "label")
-        .attr('dy', '.28em')
-        .text(function (d) { return d.name; })
-        .style("font-size", (d) => { return 100 + "%"; })
-        .style("font-weight", "bold")
-        .call(d3cola.drag);
-
-
-    //.call(d3cola.drag);
-
-    label.append("title").text(function (d) { return d.name; });
-
-
-    d3cola.on("tick", function () {
-        link.attr("x1", function (d) {
-            return d.source.x;
-        })
-            .attr("y1", function (d) {
-
-                return d.source.y;
-            })
-            .attr("x2", function (d) {
-                var w = this.getBBox().width;
-                return d.target.x;
-            })
-            .attr("y2", function (d) {
-                return d.target.y;
-            });
-
-        node.attr("x", function (d) {
-            var w = this.getBBox().width;
-            //return d.x - d.width / 2; 
-            return d.x - w / 2;
-        })
-            .attr("y", function (d) {
-                var h = this.getBBox().height;
-                //return d.y - d.height / 2; 
-                return d.y - h / 2;
-            });
-
-        label.attr("x", function (d) {
-            var w = this.getBBox().width;
-
-            return d.x - w / 2;
-
-        })
-            .attr("y", function (d) {
-                var h = this.getBBox().height;
-                return d.y;
-            });
-
-    });
-    */
+    //console.log("microsegundos "+(performance.now()-start))
+    //console.timeEnd('visualizacion');
+     
 </script>
-
 </html>

@@ -207,8 +207,9 @@ def crearMatrizDocTerm(data, vocab_min_count, vocab_max_size):
 
 
 def extractTopics(data, n_topic):
-    vocab_max_size = 5000
-    vocab_min_count = 20
+    data = data['tweetFiltrado'].to_list()
+    vocab_max_size = 2500
+    vocab_min_count = 30
     n_topKeyword = 30
     vocab, dt_mat, SS = crearMatrizDocTerm(
         data, vocab_min_count, vocab_max_size)

@@ -1,47 +1,12 @@
 from anytree import Node, RenderTree
-import pandas as pd
 from anytree.dotexport import RenderTreeGraph
 from anytree.exporter import DotExporter
-import json
-
-"""-----------------------------------------------------"""
-
-
-class Tokenize:
-    def __init__(self, df):
-        # diccionario de todos los tokens unicos
-        self.itemset = self.getItemset(df)
-        self.data = df[['tweet', 'tweetFiltrado', 'likes_count']].copy()
-        # convierte el tweet en una serie de tokens
-        self.data['tokens'] = self.data['tweetFiltrado'].apply(
-            lambda x: self.tokenizeTweet(str(x), self.itemset))
-
-    def getItemset(self, BD):
-        result = {}
-        contador = 0
-        for tweet in BD['tweetFiltrado'].values.tolist():
-            for word in tweet.split():
-                if (word in result):
-                    continue
-                else:
-                    result[word] = contador
-                    contador += 1
-        return result
-
-    def tokenizeTweet(self, tweet, tokenDict):
-        result = []
-        for word in tweet.split():
-            result.append(str(tokenDict[word]))
-        return ' '.join(result)
-
-
-"""-----------------------------------------------------"""
-
+from modelo.Tokenizer import Tokenizer
 
 class Sententree:
     def __init__(self, dataDf, palabrasNecesarias, topic, numTopic,parent,numTotalDf):
         
-        self.tokens = Tokenize(dataDf)
+        self.tokens = Tokenizer(dataDf)
         self.parent=parent
         self.ocultar=False
         # rawTopic=self.getTopic(numTopic)
@@ -52,8 +17,8 @@ class Sententree:
         self.palabrasNecesarias=palabrasNecesarias
         self.name=f"{self.numTopic}-0"
         # nodo=getNodo
-        self.maxFont = 200+((dataDf.shape[0]*200)/numTotalDf)
-        self.minFont = 90
+        self.maxFont = 150
+        self.minFont = 70
         self.maxBdSize = 0
 
         self.maxIteracion=0
@@ -119,8 +84,11 @@ class Sententree:
             if wordTopic in bdDict:
                 topicDict[wordTopic] = bdDict[wordTopic]
         if(len(topicDict)==0):
+            print("no se escogieron los topicos")
+            print(f"tamanio bdDict {len(bdDict)}")
             word = str(max(bdDict, key=lambda x: bdDict[x]))
         else:
+            print("se escogieron los topicos")
             #print(topicDict)
             word = str(max(topicDict, key=lambda x: topicDict[x]))
 
@@ -169,7 +137,7 @@ class Sententree:
                 if fontSize < self.minFont:
                     fontSize += self.minFont
                 # self.tokens.data['tokens'][int(tweetId)]
-                topTweets = [self.tokens.data['tweetFiltrado']
+                topTweets = [self.tokens.data['tweet']
                              [int(tweetId)] for tweetId in s0[:1]]
 
                 nodoJson = {
@@ -223,13 +191,20 @@ class Sententree:
         newNodo.DB = s0
         newNodo.seq = [word]
         self.maxBdSize = len(s0)
-        topTweets = [self.tokens.data['tweetFiltrado']
+        topTweets = [self.tokens.data['tweet']
                      [int(tweetId)] for tweetId in s0[:1]]
         label = list(self.tokens.itemset.keys())[int(word)]
+
+        fontSize = ((self.maxFont*len(s0))/self.maxBdSize)
+        if fontSize < self.minFont:
+            fontSize += self.minFont
+
         nodoJson = {
             "name": self.name,
-            "fontSize": self.maxFont,
-            "label": label,
+            #"fontSize": self.maxFont,
+            "fontSize": fontSize,
+            #"label": f"{label}({self.numTopic})",
+            "label": f"{label}",
             "rawText": str(topTweets[0]),
             "rawTextID": s0[:1],
             "numTopic":self.numTopic,

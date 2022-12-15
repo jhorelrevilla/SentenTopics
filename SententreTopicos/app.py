@@ -4,18 +4,22 @@ import numpy as np
 import json
 from modelo.SentenTopicModel import Sententopic
 from modelo.SententreeModel import Sententree
+from modelo.Tokenizer import Tokenizer
 from flask import Flask, jsonify, render_template, request, redirect, url_for
 import sys
 import time
 
 #df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
 #df=pd.read_csv("data/#texasResultado.csv",lineterminator='\n')
-df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
+#df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
+df=pd.read_csv("data/qatarProc.csv",lineterminator='\n')
 
 
 start_time = time.time()
-arbol=Sententopic(df,10)
-print(f"Tiempo: {time.time() - start_time} segundos")
+arbol=Sententopic(
+    dataDf=df,
+    numPalabrasPerTopic=10)
+print(f"Tiempo CREAR MODELO: {time.time() - start_time} segundos")
 
 
 app = Flask(__name__)
@@ -77,4 +81,4 @@ def mezclarTopicos():
     rawData=arbol.getDataJson()
     return rawData
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True )

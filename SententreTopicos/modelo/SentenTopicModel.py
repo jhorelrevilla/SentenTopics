@@ -5,7 +5,7 @@ from modelo.SententreeModel import Sententree
 from modelo.seanmfTopic import extractTopics
 from anytree import Node
 import json
-
+import time
 
 class Sententopic:
     def __init__(self, dataDf, numPalabrasPerTopic):
@@ -23,9 +23,8 @@ class Sententopic:
     def crearSententreePerTopics(self, df, numTopics, parent):
         numTweets=df.shape[0]
         print(f"numTweets {numTweets}")
-        data = df['tweetFiltrado'].to_list()
-        topicList = extractTopics(data, numTopics)
-
+        topicList = extractTopics(df, numTopics)
+        start_time = time.time()
         df['topico'] = df.apply(
             lambda x: self.dividirDfTopicos(
                 x.tweetFiltrado,
@@ -48,6 +47,7 @@ class Sententopic:
                     numTotalDf=numTweets
                 ))
             self.nodosID.append(self.SententreeList[-1].name)
+        print(f"Tiempo CREAR SENTENTOPIC: {time.time() - start_time} segundos")
     # -------------------------------------------------------
 
     def expandirNodo(self, SententreeID, numTopics):
@@ -147,7 +147,7 @@ class Sententopic:
         result = []
         for topic in range(numTopics):
             topicDf = df.loc[df['topico'] == topic]
-            #print(f"topico {topic} tienen {topicDf.shape}")
+            print(f"topico {topic} tienen {topicDf.shape}")
             topicDf.reset_index(drop=True, inplace=True)
             result.append(topicDf.copy())
         return result
@@ -193,7 +193,7 @@ class Sententopic:
         sententopicLinks=[]
         SententopicRestricciones=[]
         for sententree in self.SententreeList:
-            print(f"enlaces para {sententree.name}")
+            #print(f"enlaces para {sententree.name}")
 
             if not sententree.visible:
                 continue
@@ -201,13 +201,15 @@ class Sententopic:
             if (sententree.parent == 'root'):
                 nombreNodo = "Sententopic"
 
-            print(f"Sententopic source {nombreNodo}")
-            print(f"Sententopic target {sententree.nodosListID[0]}")
+            #print(f"Sententopic source {nombreNodo}")
+            #print(f"Sententopic target {sententree.nodosListID[0]}")
             sententopicLinks.append(
                 {
                     "source": nodosID.index(nombreNodo),
                     "target": nodosID.index(sententree.nodosListID[0]),
-                    "length": 0,
+                    "jaccard": 10,
+                    "distance": 5,
+                    #"weight":2,
                     "tipo":"sententopic"
                 }
             )
@@ -218,7 +220,7 @@ class Sententopic:
                     "left": nodosID.index(nombreNodo),
                     "right": nodosID.index(sententree.nodosListID[0]),
                     "tipo": "sententopic",
-                    "gap":300
+                    "gap":200
                 }
             )
             
@@ -230,7 +232,9 @@ class Sententopic:
             #print(f"target {target}")
             link['source'] = source
             link['target'] = target
-            link['length'] = 120
+            link['jaccard'] = 20
+            link['distance'] =10
+
             #link['gap']=30
             #print(f"link {link}")
         # restricciones
@@ -242,7 +246,7 @@ class Sententopic:
             restriccion['axis'] = "x"
             restriccion['left'] = nodosID.index(restriccion['left'])
             restriccion['right'] = nodosID.index(restriccion['right'])
-            restriccion['gap']=150
+            restriccion['gap']=10
         #--------------------------------------------------------------------
         # actualizar grupos
         for grupo in grupos:
@@ -250,7 +254,7 @@ class Sententopic:
             for nodo in grupo['leaves']:
                 newNodes.append(nodosID.index(nodo))
             grupo['leaves']=newNodes
-            grupo['padding']=5
+            grupo['padding']=10
             #grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
             
         links+=sententopicLinks
