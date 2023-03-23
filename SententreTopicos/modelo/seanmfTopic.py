@@ -206,18 +206,18 @@ def crearMatrizDocTerm(data, vocab_min_count, vocab_max_size):
 # ---------------------------------------
 
 
-def extractTopics(data, n_topic):
+def extractTopics(data, numTopics):
     vocab_max_size = 5000
     vocab_min_count = 20
     n_topKeyword = 30
     vocab, dt_mat, SS = crearMatrizDocTerm(
         data, vocab_min_count, vocab_max_size)
-    model = SeaNMFL1(dt_mat, SS, n_topic=n_topic)
+    model = SeaNMFL1(dt_mat, SS, n_topic=numTopics)
 
     W = model.W1
     PMI_arr = []
     n_topKeyword = 10
-    for k in range(n_topic):
+    for k in range(numTopics):
         topKeywordsIndex = W[:, k].argsort()[::-1][:n_topKeyword]
         PMI_arr.append(calculate_PMI(dt_mat, topKeywordsIndex))
     index = np.argsort(PMI_arr)
