@@ -11,8 +11,8 @@ import time
 
 #df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
 #df=pd.read_csv("data/#texasResultado.csv",lineterminator='\n')
-#df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
-df=pd.read_csv("data/qatarProc.csv",lineterminator='\n')
+df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
+#df=pd.read_csv("data/qatarProc.csv",lineterminator='\n')
 
 
 start_time = time.time()
