@@ -17,7 +17,7 @@ class Sententree:
         self.maxFont = 200+((data.shape[0]*200)/numTotalDf)
         self.minFont = 90
         
-        # Crear nodo a partir de la palabra con mayor apoyo
+        # Crea nodo raiz 
         allTweetsNode=Node("All tweets")
         allTweetsNode.seq=[]
         allTweetsNode.DB=[i for i in range(0,data.shape[0])]
@@ -53,9 +53,11 @@ class Sententree:
         s0=None
         s1=None
 
-        #print("-"*20)
-        #print(f"Sententree con un df de tamanio {dataDf.shape[0]}")
-        #print(f"Con los topicos {topic}")
+        print("-"*20)
+        print(f"df total {data.shape[0]}")
+        print(f"Sententree con un {len(self.nodoRaiz.DB)}")
+        print(f"Con los topicos {topic}")
+        print("-"*20)
         #print(f"topicos tokenizados {self.topic}")
         
         self.leafNodes = self.generacionPatrones(
@@ -64,7 +66,6 @@ class Sententree:
             )
 
         self.convertirTokens(tokens)
-        #print("-"*20)
     # ------------------------------------------------------------------------------------
     def convertirTokens(self,tokenizer):
         nodos=self.getNodes(True)
@@ -85,7 +86,7 @@ class Sententree:
         s0 = []
         s1 = []
         bdDict = {}
-        # Crea las ocurrencias de todas las palabras
+        # Crea diccionario de todas las palabras
         for tweetId in s.DB:
             for token in self.data['tokens'][int(tweetId)].split():
                 # evita palabras de la secuencia
@@ -103,6 +104,8 @@ class Sententree:
         # Escoge palabras del topico o de la BD completa 
         word = None
         if(len(topicDict)==0):
+            # print(f"BdDict {len(bdDict)}")
+            # print(f"topicDict {len(topicDict)}")
             word = str(max(bdDict, key=lambda x: bdDict[x]))
         else:
             word = str(max(topicDict, key=lambda x: topicDict[x]))
@@ -126,16 +129,18 @@ class Sententree:
             newS1 = None
             if (not s.children):
                 # Find the most frequent super sequences s' of s that is exactly one word longer than s;
-                # word,s0,s1=growSeq(s,data)
+
                 word, s0, s1 = self.growSeqTopics(s)
-                """
-                print(f"escoge la palabra {list(self.data.itemset.keys())[int(word)]} token {word}")
-                print(f"s0 contiene {len(s0)}")
-                print(f"s1 contiene {len(s1)}")
-                print(f"seq {s.seq}")
-                print(f"Top Tweets {s0[:2]}")
-                """
-                # crea el nodo s0(palabra) y s1(no palabra)
+                # print('-'*10)
+                # print(f"escoge la palabra  token {word}")
+                # print(f"s0 contiene {len(s0)}")
+                # print(f"s1 contiene {len(s1)}")
+                # print(f"seq {s.seq}")
+                # print(f"Top Tweets {s0[:2]}")
+                # print('-'*10)
+
+
+                # Crea el nodo s0(palabra) y s1(sin palabra)
                 # Agrega s0 como hijo izq
 
                 # palabraCorpus = list(self.data.itemset.keys())[int(word)]
@@ -285,7 +290,7 @@ class Sententree:
         #  topTweet=self.data.iloc[3]['tweetFiltrado']
 
           #print(f"listPalabras {listPalabras}")
-          print (f"topTweet {topTweet}")
+        #   print (f"topTweet {topTweet}")
           
           tempo = {}
 

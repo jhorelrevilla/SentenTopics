@@ -98,11 +98,11 @@ class Sententopic:
             topicDf.reset_index(drop=True, inplace=True)
             result.append(topicDf.copy())
         return result
-    #------ OPERACIONES
+    ######################    INTERACCIONES
     def activarNodos(self,nodos:list):
         escogidos=search.findall(self.root, filter_=lambda node: node.name in nodos)
         for nodo in escogidos:
-            nodo.visible=True
+            nodo.visible= not nodo.visible
     #-------------------------------------------------------
     def expandirNodo(self, nodos:list,numero_topicos:int):
         # Recorrer todos los nodos escogidos
@@ -148,13 +148,13 @@ class Sententopic:
             if len(nodo.path) < len(nodo_menor.path):
                 nodo_menor=nodo
         
-        print("*" * 10)
-        print(nodo_menor.children)
+        # print("*" * 10)
+        # print(nodo_menor.children)
         nodo_menor_index=nodos_escogidos.index(nodo_menor)
         nodos.pop(nodo_menor_index)
         self.eliminarNodo(nodos)
 
-        print(nodo_menor.children)
+        # print(nodo_menor.children)
 
         merged_df = pd.concat(merged_df)
         merged_df.reset_index(drop=True, inplace=True)

@@ -1,33 +1,77 @@
 <!DOCTYPE html>
 <style>    
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
+    *{
+        padding: 0%;
+        margin: 0%;
+    }
     #sententreeTopicos {
         /*
         border-style: solid;
         border-width: 2px;
         border-color: black;
         */
-        padding: 0%;
-        margin: 0%;
-        height: 90vh;
-        width: 100vw;
+        
+        height: 85vh;
+        width: 95vw;
     }
 
-
+    body{
+        background-color: #e3dac9 ;
+    }
     .group {
         cursor: grab;
     }
-
+    button{
+        box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    }
     .label {
         cursor: grab;
     }
     #numTopic{
         width: 50px;
+        height: 3.5vh;
     }
     .detalles{
         font-family: 'Open Sans', sans-serif;
         font-weight: bolder;
+        /* height: 5vh; */
+        width: 100vw;
+        outline: none;
+        position: relative;
     }
+    #interacciones{
+        /* padding: 100px; */
+        overflow: hidden;
+        background-color: #333333;
+        display: flex;
+        /* justify-content: space-around; */
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        
+    }
+    #interacciones button{
+        /* padding: 100px; */
+        text-decoration: none;
+        text-align: center;
+        color: white;
+        background-color: transparent;
+        font-weight: bold;
+        /* margin: 3px; */
+        padding: 0 15px;
+        font-size: 1.5vh;
+         height: 3.5vh;
+        border-radius: 0%;
+        border: none;
+        outline: none;
+        /* padding: 20px; */
+    }
+    #interacciones button:hover{
+        background-color: red;
+    }
+
+
 </style>
 <!----------------->
 <html>
@@ -43,23 +87,14 @@
 </head>
 
 <body>
-    <div>
-        <button onclick="crearSententree()">
-            Mostrar/ocultar Sententree
-        </button>
-        <button onclick="eliminarNodo()">
-            Eliminar
-        </button>
-        <button onclick="mezclarTopicos()">
-            Mezclar
-        </button>
-    </div>
-    <div>
+    <div id="interacciones">
+        <button onclick="crearSententree()">Mostrar/ocultar Sententree</button>
+        <button onclick="eliminarNodo()">Eliminar </button>
+        <button onclick="mezclarTopicos()">Mezclar</button>
         <input id="numTopic" type="number" value="2" min="2" max="10">
-        <button onclick="buscarTopicos()">
-            Buscar topicos
-        </button>
+        <button onclick="buscarTopicos()">Buscar topicos</button>
     </div>
+    <div class="detalles"></div>
     <div id="sententreeTopicos"></div>
 </body>
 <!----------------------------------------------->
@@ -103,13 +138,16 @@
         .avoidOverlaps(true)
         .size([width, height]);
 
+    // var detalles=d3
+    //     .select('#interacciones')
+    //     .append('div')
+    //     .attr('class','detalles')
+    //     .attr('id','tooltip')
+    //     .style('position','relative ')
+    //     .style('opacity',0);
+
     var detalles=d3
-        .select('#sententreeTopicos')
-        .append('div')
-        .attr('class','detalles')
-        .attr('id','tooltip')
-        .style('position','relative ')
-        .style('opacity',0);
+        .select('.detalles');
 
     const svg = d3
         .select("#sententreeTopicos")
@@ -186,6 +224,7 @@
             .attr("class", "node")
             .attr("r",(d,i)=>{
                 if(d.label==" "){
+                    // return 15;
                     return 15;
                 }
                 return 0;
@@ -312,7 +351,7 @@
         const bboxNodes = [];
         for (let i = 0; i < d3Nodes.length; i++) {
             if(graph.nodes[i].label==" "){
-                console.log("entre");
+                // console.log("entre");
                 /*
                 var circleBbox=node[0][i].getBBox();
                 graph.nodes[i].height = circleBbox.height;
@@ -346,7 +385,8 @@
             node
                 .attr("cx",(d)=>{
                     if(d.label==" "){
-                        return d.x+14;
+                        // return d.x+14;
+                        return d.x;
                     }
                     return d.x;
                 })
@@ -418,7 +458,8 @@
     update();
     //----------------------------------------------------
     function crearSententree() {
-        if(escogidos.lenght){
+        if(escogidos.length===0){
+            alert("Debes escoger un nodo.");
             return
         }
         //console.log("ESCOGIDOS " + escogidos);
@@ -437,7 +478,8 @@
     }
     //----------------------------------------------------
     function eliminarNodo(){
-        if(escogidos.lenght){
+        if(escogidos.length===0){
+            alert("Debes escoger un nodo.");
             return
         }
         $.ajax({
@@ -455,7 +497,8 @@
     //----------------------------------------------------
     function buscarTopicos(){
         var valor=document.querySelector("#numTopic").value;
-        if(escogidos.lenght){
+        if(escogidos.length===0){
+            alert("Debes escoger un nodo.");
             return
         }
         console.log("enviando buscarTopicos")
@@ -478,7 +521,8 @@
     }
     //----------------------------------------------------
     function mezclarTopicos(){
-        if(escogidos.lenght<2){
+        if(escogidos.length<2){
+            alert("Debes escoger almenos 2 nodos.")
             return
         }
         console.log("enviando mezclarTopicos")
