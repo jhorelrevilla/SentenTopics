@@ -16,8 +16,9 @@ import json
 
 
 class Sententopic:
-    def __init__(self, dataDf, numPalabrasPerTopic):
-        #verificar que tenga la estructura necesaria
+    def __init__(self, dataFile, numPalabrasPerTopic):
+        dataDf=pd.read_csv(dataFile,lineterminator='\n')
+        # Verificar que tenga la estructura necesaria
         dataDf=dataDf[['tweet', 'tweetFiltrado', 'likes_count']].copy()
         self.numPalabrasPerTopic = numPalabrasPerTopic
         self.numeroTotalTweets=dataDf.shape[0]

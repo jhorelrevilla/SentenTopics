@@ -1,39 +1,37 @@
-from tokenize import group
-import pandas as pd
-import numpy as np
-import json
 from modelo.SentenTopicModel import Sententopic
-from modelo.SententreeModel import Sententree
-from flask import Flask, jsonify, render_template, request, redirect, url_for
-from modelo.Tokenizer import Tokenizer
-import sys
+from flask import Flask, render_template, request, redirect, url_for
 import time
 
-#df=pd.read_csv("data/#russiaResultado.csv",lineterminator='\n')
-#df=pd.read_csv("data/#texasResultado.csv",lineterminator='\n')
-df=pd.read_csv("data/#WWDCResultado.csv",lineterminator='\n')
 
+files={
+    "#WWDC":"data/#WWDCResultado.csv",
+    "#Russia":"data/#russiaResultado.csv",
+    "#Texas":"data/#texasResultado.csv"
+}
 
 start_time = time.time()
-#Tokenizar y ordenar el DF
 
-arbol=Sententopic(df,3)
+
+arbol=Sententopic(list(files.values())[0],3)
 print(f"Tiempo: {time.time() - start_time} segundos")
 
-def verificarRequest(func):
-    def inner(request):
-        if request.method != "POST":
-            return     
-        func(request.form.getlist('escogidos[]'))
-        return arbol.getDataJson2()
-    return inner
+# def verificarRequest(func):
+#     def inner(request):
+#         if request.method != "POST":
+#             return     
+#         func(request.form.getlist('escogidos[]'))
+#         return arbol.getDataJson2()
+#     return inner
+
+
 app = Flask(__name__)
 #-----------------------------------------------
 @app.route('/')
 def index():
     return render_template(
         "index.html",
-        data=arbol.getDataJson2()
+        data=arbol.getDataJson2(),
+        dataFiles=list(files.keys())
     )
 #-----------------------------------------------
 @app.route('/crearSententree',methods=['POST'])
