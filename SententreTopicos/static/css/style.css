@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
+
+:root {
+    --side-var-size: 160px;
+}
+
+* {
+    padding: 0%;
+    margin: 0%;
+
+}
+
+#sententreeTopicos {
+    /*
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+    */
+
+    height: 85vh;
+    width: 100%;
+}
+
+body {
+    background-color: #e9ecef;
+}
+
+.group {
+    cursor: grab;
+}
+
+button {
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+
+.label {
+    cursor: grab;
+}
+
+#numTopic {
+    text-align: center;
+    font-weight: bold;
+    font-size: 2vh;
+    width: 100%;
+    /* height: 3.5vh; */
+}
+
+.detalles {
+    font-family: 'Open Sans', sans-serif;
+    /* height: 5vh; */
+    width: 100%;
+    /* outline: none; */
+    /* position: relative; */
+    /* padding: 15px; */
+    /* margin-left: --side-var-size; */
+}
+
+#select_datafiles {
+    width: 100%;
+    text-align: center;
+
+}
+
+#interacciones {
+    /* padding: 100px; */
+    overflow: hidden;
+    background-color: #333333;
+    height: 100%;
+    width: var(--side-var-size);
+    position: fixed;
+    top: 0;
+    z-index: 1;
+    left: 0;
+    padding-top: 20px;
+
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* flex-wrap: wrap; */
+
+}
+
+#interacciones button {
+    /* padding: 100px; */
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    background-color: transparent;
+    font-weight: bold;
+    font-size: 2vh;
+    width: 100%;
+    /* margin: 3px; */
+    /* padding: 0 15px; */
+    padding: 20px 0 20px 0;
+
+    /* height: 3.5vh; */
+    border-radius: 0%;
+    border: none;
+    outline: none;
+    /* padding: 20px; */
+}
+
+
+#main {
+    margin-left: var(--side-var-size);
+    /* Same as the width of the sidebar */
+    /* padding: 0px 10px; */
+}
+
+
+
+#interacciones button:hover {
+    background-color: red;
+}
