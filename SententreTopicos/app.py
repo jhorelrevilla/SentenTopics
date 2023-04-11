@@ -2,7 +2,7 @@ from modelo.SentenTopicModel import Sententopic
 from flask import Flask, render_template, request, redirect, url_for
 import time
 
-
+WordsNumberPerSententree=3
 files={
     "#WWDC":"data/#WWDCResultado.csv",
     "#Russia":"data/#russiaResultado.csv",
@@ -12,7 +12,7 @@ files={
 start_time = time.time()
 
 
-arbol=Sententopic(list(files.values())[0],3)
+arbol=Sententopic(list(files.values())[0],WordsNumberPerSententree)
 print(f"Tiempo: {time.time() - start_time} segundos")
 
 # def verificarRequest(func):
@@ -25,6 +25,18 @@ print(f"Tiempo: {time.time() - start_time} segundos")
 
 
 app = Flask(__name__)
+#-----------------------------------------------
+@app.route('/cambiarDataset',methods=['POST'])
+def cambiarDataset():
+    if request.method != "POST":
+        return
+    dataSetName=str(request.form.get('dataSetName'))
+    print(f"cambiar dataset {dataSetName}")
+    print(f"con el archivo {files[dataSetName]}")
+    arbol=Sententopic(files[dataSetName],WordsNumberPerSententree)
+
+    rawData=arbol.getDataJson2()
+    return rawData
 #-----------------------------------------------
 @app.route('/')
 def index():
