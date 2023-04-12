@@ -37,6 +37,11 @@ const d3cola = cola.d3adaptor()
     .avoidOverlaps(true)
     .size([width, height]);
 
+
+let escalaFuente=d3.scale.linear()
+    .domain([0,graph.maxSize])
+    .range([10,200]);
+
 // var detalles=d3
 //     .select('#interacciones')
 //     .append('div')
@@ -144,7 +149,10 @@ function renderLabels() {
         .attr('index', (d, i) => i)
         .text(function (d) { return d.label; })
         //.style("filter","url(#solid)")
-        .style("font-size", (d) => { return d.fontSize + "%"; })
+        .style("font-size", (d) => {
+            // return d.fontSize + "%"; 
+            return escalaFuente(d.fontSize);
+        })
         .style("font-weight", "bolder")
         .style("fill", (d, i) => {
             return colors[(d.numTopic % 10)];
@@ -205,7 +213,7 @@ function mouseEncima(event, d) {
     var i = this.getAttribute('index');
     detalles
         .html(
-            '🐦Tweet: <b>' + graph.nodes[i].rawText + '</b>'
+            '🐦 Tweet: <b>' + graph.nodes[i].rawText + '</b> <br>❤️ Likes: '+graph.nodes[i].likes_count
         )
         // .style('left', 260 + 'px')
         // .style('top', 0 + 'px')
@@ -355,108 +363,7 @@ function update() {
 
 // Main 
 update();
-//------------------------------- INTERACCIONES
-function cambiarDataset() {
-    var valor = document.querySelector("#select_datafiles").value;
-    console.log("cambiar dataset")
-    console.log(valor)
 
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('cambiarDataset')}}",
-        data: {
-            "dataSetName": valor,
-        },
-        success: function (result) {
-            graph = result;
-            update();
-            escogidos = [];
-        }
-    })
-}
-//----------------------------------------------------
-function crearSententree() {
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
-    }
-    //console.log("ESCOGIDOS " + escogidos);
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('crearSententree')}}",
-        data: { "escogidos": escogidos },
-        success: function (result) {
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = []
-        }
-    })
-
-}
-//----------------------------------------------------
-function eliminarNodo() {
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
-    }
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('eliminarNodo')}}",
-        data: { "escogidos": escogidos },
-        success: function (result) {
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = []
-        }
-    })
-}
-//----------------------------------------------------
-function buscarTopicos() {
-    var valor = document.querySelector("#numTopic").value;
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
-    }
-    console.log("enviando buscarTopicos")
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('buscarTopicos')}}",
-        data: {
-            "escogidos": escogidos,
-            "numeroTopicos": valor
-        },
-        success: function (result) {
-            //console.log("GAAAAAAAAAA")
-            //console.log(result);
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = [];
-        }
-    })
-}
-//----------------------------------------------------
-function mezclarTopicos() {
-    if (escogidos.length < 2) {
-        alert("Debes escoger almenos 2 nodos.")
-        return
-    }
-    console.log("enviando mezclarTopicos")
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('mezclarTopicos')}}",
-        data: {
-            "escogidos": escogidos
-        },
-        success: function (result) {
-            graph = result;
-            update();
-            escogidos = [];
-        }
-    })
-}
     /*
 document.querySelector("#sententreeTopicos").offsetHeight;
 

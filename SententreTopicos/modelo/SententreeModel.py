@@ -42,6 +42,7 @@ class Sententree:
             "rawText": str(
                 [self.data['tweetFiltrado'][int(tweetId)] for tweetId in s0[:1]][0]    
             ),
+            "likes_count":int(self.data['likes_count'][s0[:1][0]]),                         
             "rawTextID": s0[:1],
             "numTopic":self.numTopic,
             "size": len(s0),
@@ -167,6 +168,7 @@ class Sententree:
                     "rawText": str(topTweets[0]),
                     "rawTextID": s0[:1],
                     "numTopic":self.numTopic,
+                    "likes_count":int(self.data['likes_count'][s0[:1][0]]),
                     "size": len(s0),
                     "width": 1,
                     "height": 1

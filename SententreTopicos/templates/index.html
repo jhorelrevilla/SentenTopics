@@ -7,7 +7,7 @@
 
 <head>
     <title>
-        Sententopic 
+        Sententopic
     </title>
     <link rel="icon" href="/static/img/Sententree_logo.png" type="image/x-icon">
 </head>
@@ -35,112 +35,115 @@
 <!----------------------------------------------->
 <script>
     var graph = JSON.parse('{{data|tojson|safe}}');
+    var dbName = document.querySelector("#select_datafiles").value;
     console.log(graph);
 </script>
 <script src="{{url_for('static',filename='js/SententopicVis.js')}}"></script>
 <script>
     //------------------------------- INTERACCIONES
-function cambiarDataset() {
-    var valor = document.querySelector("#select_datafiles").value;
-    console.log("cambiar dataset")
-    console.log(valor)
+    function cambiarDataset() {
+        var valor = document.querySelector("#select_datafiles").value;
+        if (dbName !== valor) {
+            console.log("cambiando bd")
+            $.ajax({
+                type: "POST",
+                url: "{{url_for('cambiarDataset')}}",
+                data: {
+                    "dataSetName": valor,
+                },
+                success: function (result) {
+                    graph = result;
+                    update();
+                    escogidos = [];
+                }
+            })
+            dbName=valor;
+        }
 
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('cambiarDataset')}}",
-        data: {
-            "dataSetName": valor,
-        },
-        success: function (result) {
-            graph = result;
-            update();
-            escogidos = [];
-        }
-    })
-}
-//----------------------------------------------------
-function crearSententree() {
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
     }
-    //console.log("ESCOGIDOS " + escogidos);
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('crearSententree')}}",
-        data: { "escogidos": escogidos },
-        success: function (result) {
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = []
+    //----------------------------------------------------
+    function crearSententree() {
+        if (escogidos.length === 0) {
+            alert("Debes escoger almenos un nodo.");
+            return
         }
-    })
+        //console.log("ESCOGIDOS " + escogidos);
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('crearSententree')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos = []
+            }
+        })
 
-}
-//----------------------------------------------------
-function eliminarNodo() {
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
     }
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('eliminarNodo')}}",
-        data: { "escogidos": escogidos },
-        success: function (result) {
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = []
+    //----------------------------------------------------
+    function eliminarNodo() {
+        if (escogidos.length === 0) {
+            alert("Debes escoger almenos un nodo.");
+            return
         }
-    })
-}
-//----------------------------------------------------
-function buscarTopicos() {
-    var valor = document.querySelector("#numTopic").value;
-    if (escogidos.length === 0) {
-        alert("Debes escoger almenos un nodo.");
-        return
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('eliminarNodo')}}",
+            data: { "escogidos": escogidos },
+            success: function (result) {
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos = []
+            }
+        })
     }
-    console.log("enviando buscarTopicos")
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('buscarTopicos')}}",
-        data: {
-            "escogidos": escogidos,
-            "numeroTopicos": valor
-        },
-        success: function (result) {
-            //console.log("GAAAAAAAAAA")
-            //console.log(result);
-            graph = result;
-            //console.log(graph);
-            update();
-            escogidos = [];
+    //----------------------------------------------------
+    function buscarTopicos() {
+        var valor = document.querySelector("#numTopic").value;
+        if (escogidos.length === 0) {
+            alert("Debes escoger almenos un nodo.");
+            return
         }
-    })
-}
-//----------------------------------------------------
-function mezclarTopicos() {
-    if (escogidos.length < 2) {
-        alert("Debes escoger almenos 2 nodos.")
-        return
+        console.log("enviando buscarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('buscarTopicos')}}",
+            data: {
+                "escogidos": escogidos,
+                "numeroTopicos": valor
+            },
+            success: function (result) {
+                //console.log("GAAAAAAAAAA")
+                //console.log(result);
+                graph = result;
+                //console.log(graph);
+                update();
+                escogidos = [];
+            }
+        })
     }
-    console.log("enviando mezclarTopicos")
-    $.ajax({
-        type: "POST",
-        url: "{{url_for('mezclarTopicos')}}",
-        data: {
-            "escogidos": escogidos
-        },
-        success: function (result) {
-            graph = result;
-            update();
-            escogidos = [];
+    //----------------------------------------------------
+    function mezclarTopicos() {
+        if (escogidos.length < 2) {
+            alert("Debes escoger almenos 2 nodos.")
+            return
         }
-    })
-}
+        console.log("enviando mezclarTopicos")
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('mezclarTopicos')}}",
+            data: {
+                "escogidos": escogidos
+            },
+            success: function (result) {
+                graph = result;
+                update();
+                escogidos = [];
+            }
+        })
+    }
 </script>
 
 </html>

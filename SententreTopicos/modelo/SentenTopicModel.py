@@ -35,7 +35,17 @@ class Sententopic:
             numTopics=10,
             parent=self.root 
         )        
-        # self.getDataJson2()
+        # Calcular el nodo con mayor tweets
+        
+        sizeList=[]
+        for node in PreOrderIter(self.root):
+            if not node.parent:
+                continue
+            sizeList.append(node.sententree.nodoRaiz.graphNodes[0]['size'])
+        self.MaxSizeNode=max(sizeList)
+
+        print(f"maximo valor de nodo {self.MaxSizeNode}")
+
     #-------------------------------------------------------
     def crearSententreePerTopics(self, data, numTopics, parent):
         # Extraer topicos
@@ -277,6 +287,7 @@ class Sententopic:
             #grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
 
         return {
+            "maxSize":self.MaxSizeNode,
             "nodes": nodos,
             "links": links,
             "constraints": restricciones,

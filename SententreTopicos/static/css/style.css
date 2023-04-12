@@ -21,9 +21,16 @@
     width: 100%;
 }
 
-body {
+/* body {
     background-color: #e9ecef;
+} */
+
+body {
+    background-size: 72px 72px, 72px 72px, 24px 24px, 24px 24px;
+    background-image: linear-gradient(rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, .125) 1px, transparent 1px);
+    background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
 }
+
 
 .group {
     cursor: grab;
