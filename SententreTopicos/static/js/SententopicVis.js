@@ -40,27 +40,90 @@ const d3cola = cola.d3adaptor()
 
 let escalaFuente=d3.scale.linear()
     .domain([0,graph.maxSize])
-    .range([10,200]);
+    .range([10,150]);
 
-// var detalles=d3
-//     .select('#interacciones')
-//     .append('div')
-//     .attr('class','detalles')
-//     .attr('id','tooltip')
-//     .style('position','relative ')
-//     .style('opacity',0);
 
 var detalles = d3
     .select('.detalles');
+
+
+// Disenio de casilleros en background
+
+
 
 const svg = d3
     .select("#sententreeTopicos")
     .append("svg")
     .attr("class", "main")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .attr("pointer-events", "all");
+
+var gridDesign=svg.append('defs');
+gridDesign.append('pattern')
+    .attr('id','smallGrid')
+    .attr('width','8')
+    .attr('height','8')
+    .attr('patternUnits','userSpaceOnUse')
+    .append('path')
+    .attr('d','M 8 0 L 0 0 0 8')
+    .attr('fill','none')
+    .attr('stroke','gray')
+    .attr('stroke-width','0.5');
+
+var grid=gridDesign.append('pattern')
+    .attr('id','grid')    
+    .attr('width','80')
+    .attr('height','80')
+    .attr('patternUnits','userSpaceOnUse');
+
+grid.append('rect')
+    .attr('width','80')
+    .attr('height','80')
+    .attr('fill','url(#smallGrid)');
+
+grid.append('path')
+    .attr('d','M 80 0 L 0 0 0 80')
+    .attr('fill','none')
+    .attr('stroke','gray')
+    .attr('stroke-width','1');
+
+svg.append('rect')
+    .attr('class','background')
+    .attr('width','100%')
+    .attr('height','100%')
+    .attr('fill','url(#grid)')
+    .attr('fill-opacity','0.5')
+    .call(d3.behavior.zoom().on("zoom", redraw));
+
+
+
+
+
+
+var vis=svg
+    .append('g');
+    
+var nodeMouseDown=false;
+function redraw(){
+    if(nodeMouseDown) return;
+    vis.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+
+}
+
+var groupLayer=vis.append('g')
+    .attr('id','groupLayer');
+var linksLayer=vis.append('g')
+    .attr('id','linksLayer');
+var nodesLayer=vis.append('g')
+    .attr('id','nodesLayer');
+var labelLayer=vis.append('g')
+    .attr('id','labelLayer');
+
+
 
 var colors = ["#f94144", "#f3722c", "#f8961e", "#f9844a", "#9f86c0", "#90be6d", "#43aa8b", "#4d908e", "#577590", "#277da1"];
+// Diseno lineas punteadas para cada grupo
 var filterDef = svg.append("defs");
 var filter = filterDef
     .append("filter")
@@ -82,26 +145,8 @@ filterMerge.append("feMergeNode")
 filterMerge.append("feMergeNode")
     .attr("in", "SourceGraphic");
 
-
-/*
-var domain=createDomain(100,colors.length)
-var color=d3
-    .scale.linear()
-    .domain(domain)
-    .range(colors);
-
-function createDomain(dataLength,colorsLength){
-    var domain = [0];
-    var toAdd = colorsLength - 2;
-    for(i = 1; i <= toAdd; i++) {
-        domain.push(Math.floor(dataLength * (i / (colorsLength - 1))));
-    }
-    domain.push(dataLength - 1);         
-    return domain;
-}
-*/
 function renderLinks() {
-    var link = svg
+    var link = linksLayer
         .selectAll(".link")
         .data(graph.links)
         .enter().append("line")
@@ -121,7 +166,7 @@ function renderLinks() {
     return link;
 }
 function renderNodes() {
-    var node = svg
+    var node = nodesLayer
         .selectAll(".node")
         .data(graph.nodes)
         .enter().append("circle")
@@ -139,7 +184,7 @@ function renderNodes() {
     return node;
 }
 function renderLabels() {
-    var label = svg
+    var label = labelLayer
         .selectAll(".label")
         .data(graph.nodes)
         .enter()
@@ -166,7 +211,8 @@ function renderLabels() {
     return label;
 }
 function renderGroups() {
-    var group = svg.selectAll(".group")
+    var group = groupLayer
+        .selectAll(".group")
         .data(graph.groups)
         .enter()
         .append("rect")
@@ -213,10 +259,11 @@ function mouseEncima(event, d) {
     var i = this.getAttribute('index');
     detalles
         .html(
-            '🐦 Tweet: <b>' + graph.nodes[i].rawText + '</b> <br>❤️ Likes: '+graph.nodes[i].likes_count
+            '🐦 Tweet: <b>' + graph.nodes[i].rawText + '</b> <br>❤️ Likes: <b>'+graph.nodes[i].likes_count+'</b>'
         )
         // .style('left', 260 + 'px')
         // .style('top', 0 + 'px')
+        // .style('height','7vh')
         .style('background-color', function () {
             return '#ade8f4';
         });
@@ -225,6 +272,7 @@ function mouseEncima(event, d) {
 function mouseAfuera(data) {
     detalles
         .style('opacity', 0)
+        .style('height',0);
     // .style('left', -1 + 'px')
     // .style('top', -3 + 'px');
 }
@@ -237,22 +285,22 @@ function update() {
         .constraints(graph.constraints)
 
         .flowLayout('x', 120)
-        //.linkDistance((d,i)=>{return d.length;})
-        //.linkDistance(70)
+        // .linkDistance((d,i)=>{return d.length;})
+        // .linkDistance(70)
         .jaccardLinkLengths((d, i) => { return d.length; })
         .start();
 
-    var oldLinks = svg.selectAll(".link").remove();
-    var oldLabel = svg.selectAll(".label").remove();
-    var oldGroup = svg.selectAll(".group").remove();
-    var oldNode = svg.selectAll(".node").remove();
+    var oldLinks = linksLayer.selectAll(".link").remove();
+    var oldLabel = labelLayer.selectAll(".label").remove();
+    var oldGroup = groupLayer.selectAll(".group").remove();
+    var oldNode = nodesLayer.selectAll(".node").remove();
     /****crear nodos,links y grupos****/
     const group = renderGroups();
     const link = renderLinks();
     const node = renderNodes();
     const label = renderLabels();
-
-
+    /****entrada mouse background****/
+    // var enter=node.X
     /****Actualizar Nodos****/
     var d3Nodes = document.querySelectorAll(".label");
     const bboxNodes = [];
@@ -362,6 +410,8 @@ function update() {
 }
 
 // Main 
+
+
 update();
 
     /*

@@ -40,7 +40,7 @@ class Sententree:
             "fontSize": self.maxFont,
             "label": word,
             "rawText": str(
-                [self.data['tweetFiltrado'][int(tweetId)] for tweetId in s0[:1]][0]    
+                [self.data['tweet'][int(tweetId)] for tweetId in s0[:1]][0]    
             ),
             "likes_count":int(self.data['likes_count'][s0[:1][0]]),                         
             "rawTextID": s0[:1],
@@ -158,7 +158,7 @@ class Sententree:
                 if fontSize < self.minFont:
                     fontSize += self.minFont
                 # self.data.data['data'][int(tweetId)]
-                topTweets = [self.data['tweetFiltrado']
+                topTweets = [self.data['tweet']
                              [int(tweetId)] for tweetId in s0[:1]]
 
                 nodoJson = {

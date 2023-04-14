@@ -17,18 +17,8 @@
     border-color: black;
     */
 
-    height: 85vh;
+    height: 96vh;
     width: 100%;
-}
-
-/* body {
-    background-color: #e9ecef;
-} */
-
-body {
-    background-size: 72px 72px, 72px 72px, 24px 24px, 24px 24px;
-    background-image: linear-gradient(rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(rgba(0, 0, 0, .125) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, .125) 1px, transparent 1px);
-    background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
 }
 
 
@@ -41,6 +31,9 @@ button {
 }
 
 .label {
+    cursor: pointer;
+}
+.background{
     cursor: grab;
 }
 
@@ -48,14 +41,15 @@ button {
     text-align: center;
     font-weight: bold;
     font-size: 2vh;
-    width: 100%;
+    width: 50%;
     /* height: 3.5vh; */
 }
 
 .detalles {
     font-family: 'Open Sans', sans-serif;
-    /* height: 5vh; */
+    /* height: 7vh;  */
     width: 100%;
+
     /* outline: none; */
     /* position: relative; */
     /* padding: 15px; */
@@ -65,7 +59,7 @@ button {
 #select_datafiles {
     width: 100%;
     text-align: center;
-
+    height: 3vh;
 }
 
 #interacciones {
@@ -86,6 +80,12 @@ button {
     justify-content: flex-start;
     /* flex-wrap: wrap; */
 
+}
+
+#buscar_topicos_container{
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
 }
 
 #interacciones button {
@@ -111,11 +111,8 @@ button {
 
 #main {
     margin-left: var(--side-var-size);
-    /* Same as the width of the sidebar */
-    /* padding: 0px 10px; */
+    font-family: Arial, sans-serif;
 }
-
-
 
 #interacciones button:hover {
     background-color: red;
