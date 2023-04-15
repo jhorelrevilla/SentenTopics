@@ -46,8 +46,8 @@ class Sententree:
             "rawTextID": s0[:1],
             "numTopic":self.numTopic,
             "size": len(s0),
-            "width": 1,
-            "height": 1    
+            "width": 0,
+            "height": 0    
             }]
         
         word=None
@@ -170,8 +170,8 @@ class Sententree:
                     "numTopic":self.numTopic,
                     "likes_count":int(self.data['likes_count'][s0[:1][0]]),
                     "size": len(s0),
-                    "width": 1,
-                    "height": 1
+                    "width": 0,
+                    "height": 0
                 }
                 self.nodosListID.append(
                     f"{self.numTopic}-{palabrasNecesarias}")
@@ -357,7 +357,7 @@ class Sententree:
             constrait = {
                 "left": link["source"],
                 "right": link["target"],
-                "tipo":"Sententree"
+                "tipo":"sententree"
             }
             result.append(constrait)
             if (link['source'] in restriccionXSource):

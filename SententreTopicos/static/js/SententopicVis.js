@@ -278,17 +278,44 @@ function mouseAfuera(data) {
 }
 function update() {
     console.log(graph);
+
+    // Actualizar links
+    for(var x=0;x<Object.keys(graph.links).length;x++){
+        if(graph.links[x].tipo==='sententopic'){
+            graph.links[x].length=150;
+            continue;
+        }
+        graph.links[x].length=150;
+        
+    }
+    // Actualizar restricciones
+    for(var x=0;x<Object.keys(graph.constraints).length;x++){
+        if(graph.constraints[x].tipo==='sententopic'){
+            graph.constraints[x].gap=200;
+            continue;
+        }
+        graph.constraints[x].gap=150;
+    }
+
     d3cola
         .nodes(graph.nodes)
         .links(graph.links)
-        .groups(graph.groups)
         .constraints(graph.constraints)
+        .groups(graph.groups)
+        
+
 
         .flowLayout('x', 120)
-        // .linkDistance((d,i)=>{return d.length;})
+        // .jaccardLinkLengths((d, i) => { return d.length; })
+        
+        .linkDistance((d,i)=>{return d.length;})
+        .jaccardLinkLengths(50)
         // .linkDistance(70)
-        .jaccardLinkLengths((d, i) => { return d.length; })
-        .start();
+        // .symmetricDiffLinkLengths((d)=>{return d.length;})
+        // .symmetricDiffLinkLengths(20)
+        // .linkDistance(50)
+        // .symmetricDiffLinkLengths(40)
+        .start(20,20,120);
 
     var oldLinks = linksLayer.selectAll(".link").remove();
     var oldLabel = labelLayer.selectAll(".label").remove();
@@ -307,20 +334,20 @@ function update() {
     for (let i = 0; i < d3Nodes.length; i++) {
         if (graph.nodes[i].label == " ") {
             // console.log("entre");
-            /*
+            
             var circleBbox=node[0][i].getBBox();
             graph.nodes[i].height = circleBbox.height;
             graph.nodes[i].width = circleBbox.width;
-            */
-            graph.nodes[i].height = 90;
-            graph.nodes[i].width = 60;
+            
+            // graph.nodes[i].height = 90;
+            // graph.nodes[i].width = 60;
             continue;
         }
         var labelBbox = d3Nodes[i].getBBox();
         bboxNodes.push(labelBbox);
         //console.log(labelBbox);
-        graph.nodes[i].height = labelBbox.height + 2.0;
-        graph.nodes[i].width = labelBbox.width + 2.0;
+        graph.nodes[i].height = labelBbox.height + 5.0;
+        graph.nodes[i].width = labelBbox.width + 5.0;
     }
 
     /****d3 tick****/

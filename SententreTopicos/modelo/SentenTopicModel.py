@@ -234,7 +234,7 @@ class Sententopic:
                 {
                     "source": self.getNodeData(node.parent)[0]['name'],
                     "target": nodoJson[0]['name'],
-                    "length": 0,
+                    # "length": 70,
                     "tipo":"sententopic"
                 }                
             )
@@ -244,7 +244,7 @@ class Sententopic:
                     "left": self.getNodeData(node.parent)[0]['name'],
                     "right": nodoJson[0]['name'],
                     "tipo": "sententopic",
-                    "gap":300
+                    # "gap":300
                 }
             )
 
@@ -258,13 +258,9 @@ class Sententopic:
         for link in links:
             source = nodosID.index(link['source'])
             target = nodosID.index(link['target'])
-            #print(f"source {type(source)}")
-            #print(f"target {target}")
             link['source'] = source
             link['target'] = target
-            link['length'] = 120
-            #link['gap']=30
-            #print(f"link {link}")
+            link['length'] = 0
         
         # Restricciones
         for restriccion in restricciones:
@@ -275,7 +271,7 @@ class Sententopic:
             restriccion['axis'] = "x"
             restriccion['left'] = nodosID.index(restriccion['left'])
             restriccion['right'] = nodosID.index(restriccion['right'])
-            restriccion['gap']=150
+            restriccion['gap']=0
         
         # Grupos
         for grupo in grupos:
@@ -293,113 +289,3 @@ class Sententopic:
             "constraints": restricciones,
             "groups": grupos
         }
-    #-------------------------------------------------------
-    def getDataJson(self):
-        nodosID = []
-        nodos = []
-        links = []
-        restricciones = []
-        grupos = []
-
-        # Nodo principal
-        nodos.append(
-            {
-                "label": " ",
-                "name": "Sententopic",
-                "width": 60,
-                "heigth": 40
-            }
-        )
-        # nodos de los Sententree
-        """
-        Se necesita utilizar las posiciones de los nodos para los
-        Links, restricciones y grupos 
-        """
-        
-        for sententree in self.SententreeList:
-            if not sententree.visible:
-                #print(f"nodo no visible: {sententree.numTopic}")
-                continue
-            nodos.extend(sententree.getNodes())
-            links.extend(sententree.getLinks())
-            restricciones.extend(sententree.getRestricciones())
-            grupos.extend(sententree.getGrupos())
-
-        for nodo in nodos:
-            nodosID.append(nodo['name'])
-
-        #print(nodosID)
-
-        # LINKS Y RESTRICCIONES DEL SENTENTOPIC
-        sententopicLinks=[]
-        SententopicRestricciones=[]
-        for sententree in self.SententreeList:
-            #print(f"enlaces para {sententree.name}")
-
-            if not sententree.visible:
-                continue
-            nombreNodo = sententree.parent
-            if (sententree.parent == 'root'):
-                nombreNodo = "Sententopic"
-
-            #print(f"Sententopic source {nombreNodo}")
-            #print(f"Sententopic target {sententree.nodosListID[0]}")
-            sententopicLinks.append(
-                {
-                    "source": nodosID.index(nombreNodo),
-                    "target": nodosID.index(sententree.nodosListID[0]),
-                    "length": 0,
-                    "tipo":"sententopic"
-                }
-            )
-            
-            SententopicRestricciones.append(
-                {
-                    "axis": "x",
-                    "left": nodosID.index(nombreNodo),
-                    "right": nodosID.index(sententree.nodosListID[0]),
-                    "tipo": "sententopic",
-                    "gap":300
-                }
-            )
-            
-        # LINKS Y RESTRICCIONES DEL SENTENTREE
-        for link in links:
-            source = nodosID.index(link['source'])
-            target = nodosID.index(link['target'])
-            #print(f"source {type(source)}")
-            #print(f"target {target}")
-            link['source'] = source
-            link['target'] = target
-            link['length'] = 120
-            #link['gap']=30
-            #print(f"link {link}")
-        # restricciones
-        for restriccion in restricciones:
-            if('offset' in restriccion.keys()):
-                for offset in restriccion['offsets']:
-                    offset['node'] = nodosID.index(offset['node'])
-            
-            restriccion['axis'] = "x"
-            restriccion['left'] = nodosID.index(restriccion['left'])
-            restriccion['right'] = nodosID.index(restriccion['right'])
-            restriccion['gap']=150
-        #--------------------------------------------------------------------
-        # actualizar grupos
-        for grupo in grupos:
-            newNodes=[]
-            for nodo in grupo['leaves']:
-                newNodes.append(nodosID.index(nodo))
-            grupo['leaves']=newNodes
-            grupo['padding']=5
-            #grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
-            
-        links+=sententopicLinks
-        restricciones+=SententopicRestricciones
-        result = {
-            "nodes": nodos,
-            "links": links,
-            "constraints": restricciones,
-            "groups": grupos
-        }
-        return result
