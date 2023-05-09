@@ -29,7 +29,9 @@
             {% endfor %}
         </select>
         <div class="detalles"></div>
-        <div id="sententreeTopicos"></div>
+        <div id="sententreeTopicos">
+            <div id="loader-container"></div>
+        </div>
     </div>
 </body>
 <!----------------------------------------------->
@@ -44,7 +46,10 @@
     function cambiarDataset() {
         var valor = document.querySelector("#select_datafiles").value;
         if (dbName !== valor) {
-            console.log("cambiando bd")
+            // console.log("cambiando bd")
+            const loadingDom=document.getElementById("loader-container");
+            limpiarPantalla();
+            loadingDom.setAttribute("id","loader")
             $.ajax({
                 type: "POST",
                 url: "{{url_for('cambiarDataset')}}",
@@ -53,6 +58,8 @@
                 },
                 success: function (result) {
                     graph = result;
+                    loadingDom.setAttribute("id","loader-container")
+
                     update();
                     escogidos = [];
                 }

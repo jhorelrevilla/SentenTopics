@@ -276,6 +276,12 @@ function mouseAfuera(data) {
     // .style('left', -1 + 'px')
     // .style('top', -3 + 'px');
 }
+function limpiarPantalla(){
+    linksLayer.selectAll(".link").remove();
+    labelLayer.selectAll(".label").remove();
+    groupLayer.selectAll(".group").remove();
+    nodesLayer.selectAll(".node").remove();
+}
 function update() {
     console.log(graph);
 
@@ -317,10 +323,8 @@ function update() {
         // .symmetricDiffLinkLengths(40)
         .start(20,20,120);
 
-    var oldLinks = linksLayer.selectAll(".link").remove();
-    var oldLabel = labelLayer.selectAll(".label").remove();
-    var oldGroup = groupLayer.selectAll(".group").remove();
-    var oldNode = nodesLayer.selectAll(".node").remove();
+    limpiarPantalla()
+
     /****crear nodos,links y grupos****/
     const group = renderGroups();
     const link = renderLinks();
