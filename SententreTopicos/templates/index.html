@@ -1,156 +1,152 @@
 <!DOCTYPE html>
 <html>
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+  <head>
+    <title>Sententopic</title>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+    <link rel="icon" href="/static/img/Sententree_logo.png" type="image/x-icon" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}"/>
+  </head>
 
-<head>
-    <title>
-        Sententopic
-    </title>
-    <link rel="icon" href="/static/img/Sententree_logo.png" type="image/x-icon">
-</head>
-
-<body>
+  <body>
     <div id="interacciones">
-        <button onclick="crearSententree()">Mostrar/ocultar Sententree</button>
-        <button onclick="eliminarNodo()">Eliminar </button>
-        <button onclick="mezclarTopicos()">Mezclar</button>
-        <div id="buscar_topicos_container">
-            <input id="numTopic" type="number" value="2" min="2" max="10">
-            <button onclick="buscarTopicos()">Buscar tópicos</button>
-        </div>
+      <button onclick="crearSententree()">Mostrar/ocultar Sententree</button>
+      <button onclick="eliminarNodo()">Eliminar</button>
+      <button onclick="mezclarTopicos()">Mezclar</button>
+      <div id="buscar_topicos_container">
+        <input id="numTopic" type="number" value="2" min="2" max="10" />
+        <button onclick="buscarTopicos()">Buscar tópicos</button>
+      </div>
     </div>
     <div id="main">
-        <select id="select_datafiles" onclick="cambiarDataset()">
-            {% for file in dataFiles %}
-            <option value={{ file }}>{{ file }}</option>
-            {% endfor %}
-        </select>
-        <div class="detalles"></div>
-        <div id="sententreeTopicos">
-            <div id="loader-container"></div>
-        </div>
+      <select id="select_datafiles" onclick="cambiarDataset()">
+        {% for file in dataFiles %}
+        <option value="{{" file }}>{{ file }}</option>
+        {% endfor %}
+      </select>
+      <div class="detalles"></div>
+      <div id="sententreeTopicos">
+        <div id="loader-container"></div>
+      </div>
     </div>
-</body>
-<!----------------------------------------------->
-<script>
-    var graph = JSON.parse('{{data|tojson|safe}}');
+  </body>
+  <!----------------------------------------------->
+  <script>
+    var graph = JSON.parse("{{data|tojson|safe}}");
     var dbName = document.querySelector("#select_datafiles").value;
     console.log(graph);
-</script>
-<script src="{{url_for('static',filename='js/SententopicVis.js')}}"></script>
-<script>
+  </script>
+  <script src="{{url_for('static',filename='js/SententopicVis.js')}}"></script>
+  <script>
     //------------------------------- INTERACCIONES
     function cambiarDataset() {
-        var valor = document.querySelector("#select_datafiles").value;
-        if (dbName !== valor) {
-            // console.log("cambiando bd")
-            const loadingDom=document.getElementById("loader-container");
-            limpiarPantalla();
-            loadingDom.setAttribute("id","loader")
-            $.ajax({
-                type: "POST",
-                url: "{{url_for('cambiarDataset')}}",
-                data: {
-                    "dataSetName": valor,
-                },
-                success: function (result) {
-                    graph = result;
-                    loadingDom.setAttribute("id","loader-container")
+      var valor = document.querySelector("#select_datafiles").value;
+      if (dbName !== valor) {
+        // console.log("cambiando bd")
+        const loadingDom = document.getElementById("loader-container");
+        limpiarPantalla();
+        loadingDom.setAttribute("id", "loader");
+        $.ajax({
+          type: "POST",
+          url: "{{url_for('cambiarDataset')}}",
+          data: {
+            dataSetName: valor,
+          },
+          success: function (result) {
+            graph = result;
+            loadingDom.setAttribute("id", "loader-container");
 
-                    update();
-                    escogidos = [];
-                }
-            })
-            dbName=valor;
-        }
-
+            update();
+            escogidos = [];
+          },
+        });
+        dbName = valor;
+      }
     }
     //----------------------------------------------------
     function crearSententree() {
-        if (escogidos.length === 0) {
-            alert("Debes escoger almenos un nodo.");
-            return
-        }
-        //console.log("ESCOGIDOS " + escogidos);
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('crearSententree')}}",
-            data: { "escogidos": escogidos },
-            success: function (result) {
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos = []
-            }
-        })
-
+      if (escogidos.length === 0) {
+        alert("Debes escoger almenos un nodo.");
+        return;
+      }
+      //console.log("ESCOGIDOS " + escogidos);
+      $.ajax({
+        type: "POST",
+        url: "{{url_for('crearSententree')}}",
+        data: { escogidos: escogidos },
+        success: function (result) {
+          graph = result;
+          //console.log(graph);
+          update();
+          escogidos = [];
+        },
+      });
     }
     //----------------------------------------------------
     function eliminarNodo() {
-        if (escogidos.length === 0) {
-            alert("Debes escoger almenos un nodo.");
-            return
-        }
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('eliminarNodo')}}",
-            data: { "escogidos": escogidos },
-            success: function (result) {
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos = []
-            }
-        })
+      if (escogidos.length === 0) {
+        alert("Debes escoger almenos un nodo.");
+        return;
+      }
+      $.ajax({
+        type: "POST",
+        url: "{{url_for('eliminarNodo')}}",
+        data: { escogidos: escogidos },
+        success: function (result) {
+          graph = result;
+          //console.log(graph);
+          update();
+          escogidos = [];
+        },
+      });
     }
     //----------------------------------------------------
     function buscarTopicos() {
-        var valor = document.querySelector("#numTopic").value;
-        if (escogidos.length === 0) {
-            alert("Debes escoger almenos un nodo.");
-            return
-        }
-        console.log("enviando buscarTopicos")
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('buscarTopicos')}}",
-            data: {
-                "escogidos": escogidos,
-                "numeroTopicos": valor
-            },
-            success: function (result) {
-                //console.log("GAAAAAAAAAA")
-                //console.log(result);
-                graph = result;
-                //console.log(graph);
-                update();
-                escogidos = [];
-            }
-        })
+      var valor = document.querySelector("#numTopic").value;
+      if (escogidos.length === 0) {
+        alert("Debes escoger almenos un nodo.");
+        return;
+      }
+      console.log("enviando buscarTopicos");
+      $.ajax({
+        type: "POST",
+        url: "{{url_for('buscarTopicos')}}",
+        data: {
+          escogidos: escogidos,
+          numeroTopicos: valor,
+        },
+        success: function (result) {
+          //console.log("GAAAAAAAAAA")
+          //console.log(result);
+          graph = result;
+          //console.log(graph);
+          update();
+          escogidos = [];
+        },
+      });
     }
     //----------------------------------------------------
     function mezclarTopicos() {
-        if (escogidos.length < 2) {
-            alert("Debes escoger almenos 2 nodos.")
-            return
-        }
-        console.log("enviando mezclarTopicos")
-        $.ajax({
-            type: "POST",
-            url: "{{url_for('mezclarTopicos')}}",
-            data: {
-                "escogidos": escogidos
-            },
-            success: function (result) {
-                graph = result;
-                update();
-                escogidos = [];
-            }
-        })
+      if (escogidos.length < 2) {
+        alert("Debes escoger almenos 2 nodos.");
+        return;
+      }
+      console.log("enviando mezclarTopicos");
+      $.ajax({
+        type: "POST",
+        url: "{{url_for('mezclarTopicos')}}",
+        data: {
+          escogidos: escogidos,
+        },
+        success: function (result) {
+          graph = result;
+          update();
+          escogidos = [];
+        },
+      });
     }
-</script>
-
+  </script>
 </html>
