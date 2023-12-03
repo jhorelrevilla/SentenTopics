@@ -1,5 +1,6 @@
 from modelo.SentenTopicModel import Sententopic
 from flask import Flask, render_template, request, redirect, url_for
+import json
 import time
 
 WordsNumberPerSententree=3
@@ -40,8 +41,10 @@ def cambiarDataset():
 #-----------------------------------------------
 @app.route('/')
 def index():
+
     return render_template(
         "index.html",
+        # data=json.dumps(arbol.getDataJson2()),
         data=arbol.getDataJson2(),
         dataFiles=list(files.keys())
     )
