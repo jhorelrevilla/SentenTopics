@@ -1,5 +1,5 @@
 from modelo.SentenTopicModel import Sententopic
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,json
 import json
 import time
 
@@ -45,7 +45,7 @@ def index():
     return render_template(
         "index.html",
         # data=json.dumps(arbol.getDataJson2()),
-        data=arbol.getDataJson2(),
+        data=json.dumps(arbol.getDataJson2()),
         dataFiles=list(files.keys())
     )
 #-----------------------------------------------

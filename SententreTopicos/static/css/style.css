@@ -1,21 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto&display=swap');
 
-:root {
-    --side-var-size: 160px;
-}
 
 * {
-    padding: 0%;
-    margin: 0%;
-
+    padding: 0;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
 }
+body{
+    display: grid;
+    grid-template-areas: 
+    "h h"
+    "n d"
+    "n m";
+    grid-template-columns: 20vw 80vw;
+    grid-template-rows: 8vh 10vh 80vh;
+}
+
+header{
+    grid-area: h;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #373737;
+    color: white;
+    padding: 0px 20px 0px 20px;
+}
+
 
 #sententreeTopicos {
-    height: 96vh;
+    height: 100%;
     width: 100%;
-    /* Animacion Carga */
-    
 }
+/* Animacion Carga */
 #loader{
     position: fixed;
     z-index: -1;
@@ -32,11 +50,17 @@
   }
 
 .group {
+    margin: 50px;
     cursor: grab;
 }
 
 button {
     box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+
+#logo{
+    font-size: 30px;
+    font-weight: 700;
 }
 
 .label {
@@ -55,74 +79,95 @@ button {
 }
 
 .detalles {
-    font-family: 'Open Sans', sans-serif;
-    /* height: 7vh;  */
-    width: 100%;
-
-    /* outline: none; */
-    /* position: relative; */
-    /* padding: 15px; */
-    /* margin-left: --side-var-size; */
+    grid-area: d;
+    text-wrap: wrap;
+    text-overflow:ellipsis;
+    overflow-y: scroll;
+    border-top: 5px #4C9AF1 solid;
+    padding:0px 15px 0px 15px;
+    position: relative;
 }
 
-#select_datafiles {
-    width: 100%;
+
+#select_dataset {
+    width: 300px;
     text-align: center;
     height: 3vh;
 }
 
-#interacciones {
-    /* padding: 100px; */
-    overflow: hidden;
-    background-color: #333333;
-    height: 100%;
-    width: var(--side-var-size);
-    position: fixed;
-    top: 0;
-    z-index: 1;
-    left: 0;
-    padding-top: 20px;
-
-    align-items: center;
+nav {
+    grid-area: n;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    /* flex-wrap: wrap; */
-
+    background-color: #F2F2EA;
 }
 
+nav .nav-item:first-child .item-logo{
+    background-color: #277da1;
+}
+nav .nav-item:first-child .item-logo:hover{
+    background-color: #1b546b;
+}
+nav .nav-item:nth-child(2) .item-logo{
+    background-color: #f94144;
+}
+nav .nav-item:nth-child(2) .item-logo:hover{
+    background-color: #ad3232;
+}
+nav .nav-item:nth-child(3) .item-logo{
+    background-color: #9f86c0;
+}
+nav .nav-item:nth-child(3) .item-logo:hover{
+    background-color: #67567f;
+}
+nav .nav-item:nth-child(4) .item-logo{
+    background-color: #90be6d;
+}
+nav .nav-item:nth-child(4) .item-logo:hover{
+    background-color: #6b8953;
+}
+.nav-item{
+    border: 0;
+    min-height: 50px;
+    background-color: #F2F2EA;
+    border: 1px #76777a solid;
+    display: flex;
+    flex-direction: row;
+}
+.item-logo{
+    width: 30%;
+    border:0;
+    outline: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.item-logo:hover{
+    cursor: pointer;
+}
+.item-logo  img{
+    width: 30px;
+    width: 30px;
+}
+.item-content{
+    display:flex;
+    width: 70%;
+    align-items: center;
+    justify-content: center;
+}
+.item-input{
+    display: flex;
+    flex-direction: column;
+}
 #buscar_topicos_container{
     display: flex;
     justify-content: center;
     flex-direction: row;
 }
 
-#interacciones button {
-    /* padding: 100px; */
-    text-decoration: none;
-    text-align: center;
-    color: white;
-    background-color: transparent;
-    font-weight: bold;
-    font-size: 2vh;
-    width: 100%;
-    /* margin: 3px; */
-    /* padding: 0 15px; */
-    padding: 20px 0 20px 0;
-
-    /* height: 3.5vh; */
-    border-radius: 0%;
-    border: none;
-    outline: none;
-    /* padding: 20px; */
-}
-
-
-#main {
-    margin-left: var(--side-var-size);
+main{
+    grid-area: m;
     font-family: Arial, sans-serif;
-}
-
-#interacciones button:hover {
-    background-color: red;
 }

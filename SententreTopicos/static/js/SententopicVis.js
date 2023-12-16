@@ -31,7 +31,9 @@ var escogidos = [];
 
 //------------------------------
 const width = document.querySelector("#sententreeTopicos").offsetWidth;
+console.log("width",width);
 const height = document.querySelector("#sententreeTopicos").offsetHeight;
+console.log("height",height);
 
 const d3cola = cola.d3adaptor()
     .avoidOverlaps(true)
@@ -255,7 +257,6 @@ function renderGroups() {
 }
 
 function mouseEncima(event, d) {
-    detalles.style('opacity', 0.92);
     var i = this.getAttribute('index');
     detalles
         .html(
@@ -264,15 +265,10 @@ function mouseEncima(event, d) {
         // .style('left', 260 + 'px')
         // .style('top', 0 + 'px')
         // .style('height','7vh')
-        .style('background-color', function () {
-            return '#ade8f4';
-        });
+        ;
 }
 
 function mouseAfuera(data) {
-    detalles
-        .style('opacity', 0)
-        .style('height',0);
     // .style('left', -1 + 'px')
     // .style('top', -3 + 'px');
 }
@@ -283,8 +279,10 @@ function limpiarPantalla(){
     nodesLayer.selectAll(".node").remove();
 }
 function update() {
-    console.log(graph);
-
+    console.log("ACTUAL GRAPH",graph);
+    console.log("typeof(graph)",typeof(graph) )
+    console.log("Object.keys(graph)",Object.keys(graph))
+    console.log("ACTUALIZAR LINKS",graph.links);
     // Actualizar links
     for(var x=0;x<Object.keys(graph.links).length;x++){
         if(graph.links[x].tipo==='sententopic'){

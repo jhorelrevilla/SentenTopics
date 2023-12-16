@@ -12,43 +12,74 @@
     <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}" />
     <script>
         // var graph = JSON.parse("{{data|tojson|safe}}");
-        var graph = JSON.parse("{{data|tojson}}");
-        var dbName = document.querySelector("#select_datafiles").value;
-        console.log(graph);
+        let graph = JSON.parse({{data|tojson|safe}});;
+        console.log("graph",graph);
     </script>
     
 </head>
 
 <body>
-    <div id="interacciones">
-        <button id="mostrar_ocultar_sententree">
-            Mostrar/ocultar Sententree
-        </button>
-        <button id="eliminar_nodo">
-            Eliminar
-        </button>
-        <button id="mezclar_topico">
-            Mezclar
-        </button>
-
-        <div id="buscar_topicos_container">
-            <input id="numTopic" type="number" value="2" min="2" max="10" />
-            <button id="buscar_topico">Buscar tópicos</button>
+    <header>
+        <div id="logo">
+            Sententopic
         </div>
-    </div>
-    <div id="main">
-        <select id="select_dataset">
-          {% for file in dataFiles %}
-          <option value="{{ file }}">{{ file }}</option>
-          {% endfor %}
-        </select>
-        <div class="detalles"></div>
+        <div>
+            Base de Datos: 
+            <select id="select_dataset">
+                {% for file in dataFiles %}
+                <option value="{{ file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </header>
+    <nav>
+        <div id="mostrar_ocultar_sententree" class="nav-item">
+            <div class="item-content">
+                Mostrar/ocultar Sententree
+            </div>
+            <button class="item-logo">
+                <img src="/static/icon/merge.png">
+            </button>
+        </div>
+        <div id="eliminar_nodo" class="nav-item">
+            <div class="item-content">
+                Eliminar
+            </div>
+            <button class="item-logo">
+                <img src="/static/icon/remove.png">
+            </button>
+        </div>
+        <div id="mezclar_topico"class="nav-item">
+            <div class="item-content">
+                Mezclar
+            </div>
+            <button class="item-logo">
+                <img src="/static/icon/merge.png">
+            </button>
+        </div>
+
+        <div id="buscar_topicos_container" class="nav-item">
+            <div class="item-content item-input">
+                <div>Buscar tópicos</div>
+                <input id="numTopic" type="number" value="2" min="2" max="10" />
+            </div>
+            <button class="item-logo">
+                <img src="/static/icon/search.png">
+            </button>
+        </div>
+    </nav>
+    <div class="detalles"></div>
+    <main>
+        
         <div id="sententreeTopicos">
           <div id="loader-container"></div>
         </div>
-      </div>
+    </main>
 </body>
 <!----------------------------------------------->
+<script>
+    var dbName = document.querySelector("#select_dataset").value;
+</script>
 <script src="{{url_for('static',filename='js/interactions.js')}}"></script>
 <script src="{{url_for('static',filename='js/SententopicVis.js')}}"></script>
 </html>
