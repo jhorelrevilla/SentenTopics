@@ -1,6 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto&display=swap');
-
-
 * {
     padding: 0;
     margin: 0;
@@ -60,7 +58,13 @@ button {
 
 #logo{
     font-size: 30px;
-    font-weight: 700;
+    font-weight: 900;
+    display: flex;
+    flex-direction: row;
+}
+#logo-img{
+    width:50px;
+    height:50px;
 }
 
 .label {
@@ -74,8 +78,8 @@ button {
     text-align: center;
     font-weight: bold;
     font-size: 2vh;
-    width: 50%;
-    /* height: 3.5vh; */
+    width: 60px;
+    margin-left: 5px;
 }
 
 .detalles {
@@ -103,43 +107,29 @@ nav {
     background-color: #F2F2EA;
 }
 
-nav .nav-item:first-child .item-logo{
-    background-color: #277da1;
-}
-nav .nav-item:first-child .item-logo:hover{
-    background-color: #1b546b;
-}
-nav .nav-item:nth-child(2) .item-logo{
-    background-color: #f94144;
-}
-nav .nav-item:nth-child(2) .item-logo:hover{
-    background-color: #ad3232;
-}
-nav .nav-item:nth-child(3) .item-logo{
-    background-color: #9f86c0;
-}
-nav .nav-item:nth-child(3) .item-logo:hover{
-    background-color: #67567f;
-}
-nav .nav-item:nth-child(4) .item-logo{
-    background-color: #90be6d;
-}
-nav .nav-item:nth-child(4) .item-logo:hover{
-    background-color: #6b8953;
-}
 .nav-item{
     border: 0;
     min-height: 50px;
-    background-color: #F2F2EA;
-    border: 1px #76777a solid;
+    background-color: #a3b18a;
+
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    border-top: 1px black solid;
+    border-bottom: 1px black solid;
+    margin-bottom: 1px;
+    padding-left: 5px;
+}
+.nav-item:hover{
+    background-color: #3a5a40;
+    color: white;
 }
 .item-logo{
-    width: 30%;
-    border:0;
-    outline: none;
-    height: 100%;
+    width: 50px;
+    height: 50px;
+    border: 0px;
+    background-color: dad7cd;
+    outline: none;    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -150,24 +140,34 @@ nav .nav-item:nth-child(4) .item-logo:hover{
 .item-logo  img{
     width: 30px;
     width: 30px;
+    transition: all;
+    animation-duration: .5s;
+}
+@keyframes nav-button-scale {
+    100%{
+        transform: scale(1.5);    
+    }
+}
+.item-logo  img:hover{
+    animation-name: nav-button-scale;
 }
 .item-content{
     display:flex;
-    width: 70%;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    
 }
 .item-input{
-    display: flex;
-    flex-direction: column;
-}
-#buscar_topicos_container{
-    display: flex;
-    justify-content: center;
     flex-direction: row;
 }
 
 main{
     grid-area: m;
     font-family: Arial, sans-serif;
+}
+.menu-title{
+    font-weight: 700;
+    margin: 15px 0px 5px 0px;
+    padding-left: 5px;
 }

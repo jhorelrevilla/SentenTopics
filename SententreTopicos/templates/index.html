@@ -11,9 +11,14 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}" />
     <script>
-        // var graph = JSON.parse("{{data|tojson|safe}}");
-        let graph = JSON.parse({{data|tojson|safe}});;
-        console.log("graph",graph);
+        let graph = JSON.parse({{data|tojson|safe}});
+        const urls=[
+            "{{url_for('crearSententree')}}",
+            "{{url_for('cambiarDataset')}}",
+            "{{url_for('eliminarNodo')}}",
+            "{{url_for('buscarTopicos')}}",
+            "{{url_for('mezclarTopicos')}}",
+        ]
     </script>
     
 </head>
@@ -21,6 +26,10 @@
 <body>
     <header>
         <div id="logo">
+            <img 
+                src="{{url_for('static',filename='img/Sententree_logo.png')}}" 
+                id="logo-img"
+            />
             Sententopic
         </div>
         <div>
@@ -33,39 +42,45 @@
         </div>
     </header>
     <nav>
-        <div id="mostrar_ocultar_sententree" class="nav-item">
+        <div class="menu-title">
+            <strong>Operaciones de Nodo</strong>
+        </div>
+        <div class="nav-item">
             <div class="item-content">
                 Mostrar/ocultar Sententree
             </div>
-            <button class="item-logo">
-                <img src="/static/icon/merge.png">
+            <button class="item-logo" id="mostrar_ocultar_sententree">
+                <img src="/static/icon/show.png">
             </button>
         </div>
-        <div id="eliminar_nodo" class="nav-item">
+        <div  class="nav-item">
             <div class="item-content">
                 Eliminar
             </div>
-            <button class="item-logo">
+            <button class="item-logo" id="eliminar_nodo">
                 <img src="/static/icon/remove.png">
             </button>
         </div>
-        <div id="mezclar_topico"class="nav-item">
+        <div  class="nav-item">
             <div class="item-content">
                 Mezclar
             </div>
-            <button class="item-logo">
+            <button class="item-logo" id="mezclar_topico">
                 <img src="/static/icon/merge.png">
             </button>
         </div>
 
-        <div id="buscar_topicos_container" class="nav-item">
+        <div class="nav-item">
             <div class="item-content item-input">
                 <div>Buscar tópicos</div>
                 <input id="numTopic" type="number" value="2" min="2" max="10" />
             </div>
-            <button class="item-logo">
+            <button class="item-logo" id="buscar_topico">
                 <img src="/static/icon/search.png">
             </button>
+        </div>
+        <div class="menu-title">
+            <strong>Detalles del Nodo</strong>
         </div>
     </nav>
     <div class="detalles"></div>

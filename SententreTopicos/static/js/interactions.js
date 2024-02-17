@@ -9,10 +9,10 @@ toggle_sententree.addEventListener("click", () => {
     alert("Debes escoger almenos un nodo.");
     return;
   }
-  //console.log("ESCOGIDOS " + escogidos);
+  console.log("ESCOGIDOS " + escogidos);
   $.ajax({
     type: "POST",
-    url: "{{url_for('crearSententree')}}",
+    url: urls[0],
     data: { escogidos: escogidos },
     success: function (result) {
       graph = result;
@@ -31,7 +31,7 @@ select_dataset.addEventListener("click", () => {
     loadingDom.setAttribute("id", "loader");
     $.ajax({
       type: "POST",
-      url: "{{url_for('cambiarDataset')}}",
+      url: urls[1],
       data: {
         dataSetName: valor,
       },
@@ -54,7 +54,7 @@ eliminar_nodo.addEventListener("click", () => {
   }
   $.ajax({
     type: "POST",
-    url: "{{url_for('eliminarNodo')}}",
+    url: urls[2],
     data: { escogidos: escogidos },
     success: function (result) {
       graph = result;
@@ -74,7 +74,7 @@ buscar_topico.addEventListener("click", () => {
   console.log("enviando buscarTopicos");
   $.ajax({
     type: "POST",
-    url: "{{url_for('buscarTopicos')}}",
+    url: urls[3],
     data: {
       escogidos: escogidos,
       numeroTopicos: valor,
@@ -98,7 +98,7 @@ mezclar_topico.addEventListener("click", () => {
   console.log("enviando mezclarTopicos");
   $.ajax({
     type: "POST",
-    url: "{{url_for('mezclarTopicos')}}",
+    url: urls[4],
     data: {
       escogidos: escogidos,
     },
