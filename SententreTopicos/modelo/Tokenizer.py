@@ -3,12 +3,12 @@ import pandas as pd
 class Tokenizer:
     def __init__(self, df):
         #Se crea una lista con todas las palabras unicas
-        self.tokenList = self.__getItemset(df)
+        self.tokenList = self._getItemset(df)
         #Tokeniza los tweets filtrados y crea una columna de tokens
         df['tokens'] = df['tweetFiltrado'].apply(
-            lambda x: self.__tokenizeTweet(str(x)))
+            lambda x: self._tokenizeTweet(str(x)))
 
-    def __getItemset(self, BD):
+    def _getItemset(self, BD):
         result = []
         for tweet in BD['tweetFiltrado'].values.tolist():
             for word in tweet.split():
@@ -18,7 +18,7 @@ class Tokenizer:
                     result.append(word)
         return result
 
-    def __tokenizeTweet(self, tweet):
+    def _tokenizeTweet(self, tweet):
         result = []
         for word in tweet.split():
             result.append(str(self.tokenList.index(word)))

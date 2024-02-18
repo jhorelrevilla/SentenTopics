@@ -3,7 +3,9 @@ import pandas as pd
 from anytree.dotexport import RenderTreeGraph
 from anytree.exporter import DotExporter
 import json
+"""
 
+"""
 
 class Sententree:
     def __init__(self, data, palabrasNecesarias, topic, numTopic,numTotalDf,tokens):
@@ -38,7 +40,7 @@ class Sententree:
         self.nodoRaiz.graphNodes = [{
             "name": f"{self.numTopic}-0",
             "fontSize": self.maxFont,
-            "label": word,
+            "label": str(tokens.token2word(int(word))),
             "rawText": str(
                 [self.data['tweet'][int(tweetId)] for tweetId in s0[:1]][0]    
             ),
@@ -63,10 +65,11 @@ class Sententree:
         
         self.leafNodes = self.generacionPatrones(
             self.nodoRaiz, 
-            palabrasNecesarias
+            palabrasNecesarias,
+            tokens=tokens
             )
 
-        self.convertirTokens(tokens)
+        # self.convertirTokens(tokens)
     # ------------------------------------------------------------------------------------
     def convertirTokens(self,tokenizer):
         nodos=self.getNodes(True)
@@ -119,7 +122,7 @@ class Sententree:
                 s1.append(tweetId)
         return word, list(s0), list(s1)
     # ------------------------------------------------------------------------------------
-    def generacionPatrones(self, nodoRaiz, palabrasNecesarias):
+    def generacionPatrones(self, nodoRaiz, palabrasNecesarias,tokens):
         leafNodes = []
         leafNodes.append(nodoRaiz)
 
@@ -158,24 +161,23 @@ class Sententree:
                 if fontSize < self.minFont:
                     fontSize += self.minFont
                 # self.data.data['data'][int(tweetId)]
-                topTweets = [self.data['tweet']
-                             [int(tweetId)] for tweetId in s0[:1]]
-
-                nodoJson = {
-                    "name": f"{self.numTopic}-{palabrasNecesarias}",
-                    "fontSize": fontSize,
-                    "label": word,
-                    "rawText": str(topTweets[0]),
-                    "rawTextID": s0[:1],
-                    "numTopic":self.numTopic,
-                    "likes_count":int(self.data['likes_count'][s0[:1][0]]),
-                    "size": len(s0),
-                    "width": 0,
-                    "height": 0
-                }
+                topTweets = [self.data['tweet'][int(tweetId)] for tweetId in s0[:1]]
                 self.nodosListID.append(
                     f"{self.numTopic}-{palabrasNecesarias}")
-                newS0.graphNodes.append(nodoJson)
+                newS0.graphNodes.append(
+                    {
+                        "name": f"{self.numTopic}-{palabrasNecesarias}",
+                        "fontSize": fontSize,
+                        "label": str(tokens.token2word(int(word))),
+                        "rawText": str(topTweets[0]),
+                        "rawTextID": s0[:1],
+                        "numTopic":self.numTopic,
+                        "likes_count":int(self.data['likes_count'][s0[:1][0]]),
+                        "size": len(s0),
+                        "width": 0,
+                        "height": 0
+                    }
+                )
                 """ CREAR ARISTAS PARA EL GRAFO"""
                 newS0.graphLinks = dict(s.graphLinks)
                 newS0.graphLinks[word] = f"{self.numTopic}-{palabrasNecesarias}"

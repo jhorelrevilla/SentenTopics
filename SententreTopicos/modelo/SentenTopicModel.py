@@ -19,7 +19,8 @@ class Sententopic:
     def __init__(self, dataFile, numPalabrasPerTopic):
         dataDf=pd.read_csv(dataFile,lineterminator='\n')
         # Verificar que tenga la estructura necesaria
-        dataDf=dataDf[['tweet', 'tweetFiltrado', 'likes_count']].copy()
+        dataDf=dataDf.loc[:,['tweet', 'tweetFiltrado', 'likes_count']]
+        
         self.numPalabrasPerTopic = numPalabrasPerTopic
         self.numeroTotalTweets=dataDf.shape[0]
         self.numeroTopicos=0
@@ -53,6 +54,7 @@ class Sententopic:
             data=data['tweetFiltrado'].to_list(), 
             numTopics=numTopics
             )
+        print(f"Topic List {topicList}")
         # Dividir data por los topicos 
         dataClasificada = self.clasificarData(
             data=data, 
@@ -60,6 +62,7 @@ class Sententopic:
             )
         # Tokenizar el topico
         topicList=[[self.tokens.word2token(word) for word in topic] for topic in topicList]
+        barchart_dict={}
         # Crear Sententree por cada topico
         for i in range(len(dataClasificada)):
             
@@ -68,19 +71,27 @@ class Sententopic:
             self.numeroTopicos+=1
 
             sententree=Sententree(
-                    data=dataClasificada[i],
-                    palabrasNecesarias=self.numPalabrasPerTopic,
-                    topic=topicList[i],
-                    numTopic=self.numeroTopicos,
-                    numTotalDf=data.shape[0],
-                    tokens=self.tokens
-                )
+                data=dataClasificada[i],
+                palabrasNecesarias=self.numPalabrasPerTopic,
+                topic=topicList[i],
+                numTopic=self.numeroTopicos,
+                numTotalDf=data.shape[0],
+                tokens=self.tokens
+            )
+            
+            barchart_dict[f"{sententree.nodoRaiz.graphNodes[0]['label']}"]=dataClasificada[i].shape[0]
+            
             Node(
                 f"{self.numeroTopicos}",
                 parent=parent,
                 visible=False,
                 sententree=sententree,         
-            )            
+            )
+        parent.barchart={
+            'id':parent.name,
+            'data':barchart_dict
+        }
+        print(f"barchar_dict {parent.barchart}")
     #-------------------------------------------------------
     def clasificarTweet(self, tweet, topicList):
         resultTopics = []
@@ -203,7 +214,8 @@ class Sententopic:
                     "name": "root",
                     "label": " ",
                     "width": 60,
-                    "heigth": 40
+                    "heigth": 40,
+                    
                    }]
         return node.sententree.getNodes(node.visible)
     #-------------------------------------------------------
