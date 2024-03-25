@@ -6,6 +6,13 @@ El nodo principal deberia ser un Sententree de todos los datos?
 -Cada Nodo debe formar un Sententree
 -El tamanio de las palabras
 
+
+Nota:
+-Sententopic
+El sententopic solo debe almacenar los nodos grandes y cuando se solicite expandir, calcular el sententree y devolverlo
+-Sententree
+El constructor solo debe calcular el primer nodo y cuando se quiera expandir recien se debe ejecutar la funcion que expande el nodo, para que esto sea mas rapido
+
 """
 import pandas as pd
 from modelo.SententreeModel import Sententree
@@ -16,37 +23,25 @@ import json
 
 
 class Sententopic:
-    def __init__(self, dataFile, numPalabrasPerTopic):
-        dataDf=pd.read_csv(dataFile,lineterminator='\n')
+    def __init__(self, data, num_words):
+        dataDf=pd.read_csv(data,lineterminator='\n')
         # Verificar que tenga la estructura necesaria
         dataDf=dataDf.loc[:,['tweet', 'tweetFiltrado', 'likes_count']]
         
-        self.numPalabrasPerTopic = numPalabrasPerTopic
+        self.numPalabrasPerTopic = num_words
         self.numeroTotalTweets=dataDf.shape[0]
         self.numeroTopicos=0
         self.tokens=Tokenizer(dataDf)
         
         self.root=Node(
             "-1",
-            sententree=False,
-            visible=False
+            sententree=Sententree(
+                data=dataDf,
+                topic=[],
+                numTopic=-1,
+                tokens=self.tokens
+            )
         )
-        self.crearSententreePerTopics(
-            data=dataDf,
-            numTopics=10,
-            parent=self.root 
-        )        
-        # Calcular el nodo con mayor tweets
-        
-        sizeList=[]
-        for node in PreOrderIter(self.root):
-            if not node.parent:
-                continue
-            sizeList.append(node.sententree.nodoRaiz.graphNodes[0]['size'])
-        self.MaxSizeNode=max(sizeList)
-
-        print(f"maximo valor de nodo {self.MaxSizeNode}")
-
     #-------------------------------------------------------
     def crearSententreePerTopics(self, data, numTopics, parent):
         # Extraer topicos
@@ -65,26 +60,20 @@ class Sententopic:
         barchart_dict={}
         # Crear Sententree por cada topico
         for i in range(len(dataClasificada)):
-            
             # print(f"creando Sententree con {dataClasificada[i].shape[0]}")
-            
             self.numeroTopicos+=1
-
             sententree=Sententree(
                 data=dataClasificada[i],
-                palabrasNecesarias=self.numPalabrasPerTopic,
                 topic=topicList[i],
                 numTopic=self.numeroTopicos,
                 numTotalDf=data.shape[0],
                 tokens=self.tokens
             )
-            
             barchart_dict[f"{sententree.nodoRaiz.graphNodes[0]['label']}"]=dataClasificada[i].shape[0]
             
             Node(
                 f"{self.numeroTopicos}",
                 parent=parent,
-                visible=False,
                 sententree=sententree,         
             )
         parent.barchart={
@@ -188,7 +177,7 @@ class Sententopic:
 
         new_sententree=Sententree(
                 data=merged_df,
-                palabrasNecesarias=self.numPalabrasPerTopic,
+                num_words=self.numPalabrasPerTopic,
                 topic=merged_topics,
                 numTopic=nodo_menor.name,
                 numTotalDf=merged_df.shape[0],# Aca debe ir el tamanio del padre
@@ -212,7 +201,7 @@ class Sententopic:
         if not node.parent:
             return [{
                     "name": "root",
-                    "label": " ",
+                    "label": "PIPIPIPI",
                     "width": 60,
                     "heigth": 40,
                     
@@ -295,7 +284,6 @@ class Sententopic:
             #grupo['leaves'] = [nodosID.index(nodo) for nodo in grupo['leaves']]
 
         return {
-            "maxSize":self.MaxSizeNode,
             "nodes": nodos,
             "links": links,
             "constraints": restricciones,

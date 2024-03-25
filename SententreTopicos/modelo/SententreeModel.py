@@ -8,27 +8,32 @@ import json
 """
 
 class Sententree:
-    def __init__(self, data, palabrasNecesarias, topic, numTopic,numTotalDf,tokens):
+    def __init__(self, data, topic, numTopic,tokens):
         """Variables para la construccion del modelo"""
         self.data = data        
-        self.palabrasNecesarias=palabrasNecesarias
+        # self.palabrasNecesarias=num_words
         self.topic = topic
         self.numTopic = numTopic
-
-        # Tamanio max/min fuente
-        self.maxFont = 200+((data.shape[0]*200)/numTotalDf)
-        self.minFont = 90
         
-        # Crea nodo raiz 
-        allTweetsNode=Node("All tweets")
-        allTweetsNode.seq=[]
-        allTweetsNode.DB=[i for i in range(0,data.shape[0])]
-        word,s0,s1=self.growSeqTopics(allTweetsNode)
-        allTweetsNode=None
-        # Si la palabra con mayor soporte es del topico
-        if int(word) in self.topic:
-            self.topic.remove(int(word))
+        # Tamanio max/min fuente
+        # self.maxFont = 200+((data.shape[0]*200)/numTotalDf)
+        # self.minFont = 90
+        self.maxFont = 1
+        self.minFont = 1
+        
+        
+        # Get the most relevant word and their db
+        word,s0,s1=self.growSeqTopics(
+            Node(
+                "All tweets",
+                seq=[],
+                DB=[i for i in range(0,data.shape[0])]
+            )
+        )
 
+        self.word=word
+        
+        
         self.maxBdSize = len(s0)
         self.nodosListID=[f"{self.numTopic}-0"]
 
@@ -39,7 +44,7 @@ class Sententree:
         self.nodoRaiz.graphLinks = {word: f"{self.numTopic}-0"}
         self.nodoRaiz.graphNodes = [{
             "name": f"{self.numTopic}-0",
-            "fontSize": self.maxFont,
+            # "fontSize": self.maxFont,
             "label": str(tokens.token2word(int(word))),
             "rawText": str(
                 [self.data['tweet'][int(tweetId)] for tweetId in s0[:1]][0]    
@@ -47,9 +52,7 @@ class Sententree:
             "likes_count":int(self.data['likes_count'][s0[:1][0]]),                         
             "rawTextID": s0[:1],
             "numTopic":self.numTopic,
-            "size": len(s0),
-            "width": 0,
-            "height": 0    
+            "size": len(s0)
             }]
         
         word=None
@@ -61,27 +64,34 @@ class Sententree:
         print(f"Sententree con un {len(self.nodoRaiz.DB)}")
         print(f"Con los topicos {topic}")
         print("-"*20)
+        
+        
+        
+        
+        
         #print(f"topicos tokenizados {self.topic}")
         
-        self.leafNodes = self.generacionPatrones(
-            self.nodoRaiz, 
-            palabrasNecesarias,
-            tokens=tokens
-            )
+        # self.leafNodes = self.generacionPatrones(
+        #     self.nodoRaiz, 
+        #     palabrasNecesarias,
+        #     tokens=tokens
+        #     )
 
         # self.convertirTokens(tokens)
     # ------------------------------------------------------------------------------------
-    def convertirTokens(self,tokenizer):
-        nodos=self.getNodes(True)
-        for nodo in nodos:
-            nodo['label']=str(tokenizer.token2word(int(nodo['label'])))
+    # def convertirTokens(self,tokenizer):
+    #     nodos=self.getNodes(True)
+    #     for nodo in nodos:
+    #         nodo['label']=str(tokenizer.token2word(int(nodo['label'])))
     # ------------------------------------------------------------------------------------
+    # Consigue el nodo con mas apoyo
     def getNodoLargestSupport(self, leafNodes):
         pos = 0
-        # busca el nodo con mayor cantidad de elementos
+        # Compara las hojas del arbol
         for nodePos in range(len(leafNodes)):
             if (len(leafNodes[pos].DB) < len(leafNodes[nodePos].DB)):
                 pos = nodePos
+        # retornal la hoja con mas apoyo y la elimina del array
         result = leafNodes[pos]
         del leafNodes[pos]
         return result
@@ -89,49 +99,45 @@ class Sententree:
     def growSeqTopics(self, s):
         s0 = []
         s1 = []
-        bdDict = {}
-        # Crea diccionario de todas las palabras
-        for tweetId in s.DB:
-            for token in self.data['tokens'][int(tweetId)].split():
-                # evita palabras de la secuencia
+        bd_dict = {}
+        # Count tokens in DB
+        for tweet_id in s.DB:
+            for token in self.data['tokens'][int(tweet_id)].split():
+                # avoid repeat words in sequence
                 if token in s.seq:
                     continue
-                if token in bdDict:
-                    bdDict[token] += 1
+                if token in bd_dict:
+                    bd_dict[token] += 1
                 else:
-                    bdDict[token] = 1
-        # Crea diccionario de solo las palabras del topico
-        topicDict = {}
-        for wordTopic in self.topic:
-            if wordTopic in bdDict:
-                topicDict[wordTopic] = bdDict[wordTopic]
+                    bd_dict[token] = 1
+        # Create a Dictionary if topic exist in db_dict
+        topic_dict={x:bd_dict.get(x,-1) for x in self.topic if bd_dict}
         # Escoge palabras del topico o de la BD completa 
         word = None
-        if(len(topicDict)==0):
-            # print(f"BdDict {len(bdDict)}")
-            # print(f"topicDict {len(topicDict)}")
-            word = str(max(bdDict, key=lambda x: bdDict[x]))
+        if not topic_dict:
+            word = max(bd_dict, key=lambda x: bd_dict[x])
         else:
-            word = str(max(topicDict, key=lambda x: topicDict[x]))
+            word = max(topic_dict, key=lambda x: topic_dict[x])
+            self.topic.remove(word)
         # Dividir la BD
-        for tweetId in s.DB:
-            tweetTokens = self.data['tokens'][int(tweetId)].split()
-            if word in tweetTokens:
-                s0.append(tweetId)
+        for tweet_id in s.DB:
+            tweetTokens = self.data['tokens'][int(tweet_id)].split()
+            if str(word) in tweetTokens:
+                s0.append(tweet_id)
             else:
-                s1.append(tweetId)
-        return word, list(s0), list(s1)
+                s1.append(tweet_id)
+        return str(word), s0, s1
     # ------------------------------------------------------------------------------------
-    def generacionPatrones(self, nodoRaiz, palabrasNecesarias,tokens):
-        leafNodes = []
-        leafNodes.append(nodoRaiz)
+    def generacionPatrones(self, node_list, neededWords, tokens):
+        leafNodes=[]
+        leafNodes+=node_list
 
-        while (palabrasNecesarias > 0 and leafNodes):
+        while neededWords > 0 and leafNodes:
             # pop pattern with the largest support from leaf sequential patterns
             s = self.getNodoLargestSupport(leafNodes)
             newS0 = None
             newS1 = None
-            if (not s.children):
+            if not s.children:
                 # Find the most frequent super sequences s' of s that is exactly one word longer than s;
 
                 word, s0, s1 = self.growSeqTopics(s)
@@ -156,31 +162,31 @@ class Sententree:
                 newS0.seq.append(word)
                 """ CREAR NODOS PARA EL GRAFO"""
                 newS0.graphNodes = list(s.graphNodes)
-
-                fontSize = ((self.maxFont*len(s0))/self.maxBdSize)
-                if fontSize < self.minFont:
-                    fontSize += self.minFont
+                # DESCARTADO
+                # fontSize = ((self.maxFont*len(s0))/self.maxBdSize)
+                # if fontSize < self.minFont:
+                #     fontSize += self.minFont
+                # DESCARTADO
+                
                 # self.data.data['data'][int(tweetId)]
                 topTweets = [self.data['tweet'][int(tweetId)] for tweetId in s0[:1]]
                 self.nodosListID.append(
-                    f"{self.numTopic}-{palabrasNecesarias}")
+                    f"{self.numTopic}-{neededWords}")
                 newS0.graphNodes.append(
                     {
-                        "name": f"{self.numTopic}-{palabrasNecesarias}",
-                        "fontSize": fontSize,
+                        "name": f"{self.numTopic}-{neededWords}",
+                        # "fontSize": fontSize,
                         "label": str(tokens.token2word(int(word))),
                         "rawText": str(topTweets[0]),
                         "rawTextID": s0[:1],
                         "numTopic":self.numTopic,
                         "likes_count":int(self.data['likes_count'][s0[:1][0]]),
                         "size": len(s0),
-                        "width": 0,
-                        "height": 0
                     }
                 )
                 """ CREAR ARISTAS PARA EL GRAFO"""
                 newS0.graphLinks = dict(s.graphLinks)
-                newS0.graphLinks[word] = f"{self.numTopic}-{palabrasNecesarias}"
+                newS0.graphLinks[word] = f"{self.numTopic}-{neededWords}"
 
                 # Agrega s1 como hijo derecho
                 newS1 = Node(f"nodo nulo({len(s1)})", parent=s)
@@ -189,16 +195,16 @@ class Sententree:
                 newS1.graphNodes = list(s.graphNodes)
                 newS1.graphLinks = dict(s.graphLinks)
 
-            palabrasNecesarias -= 1
+            neededWords -= 1
             # push s' and s to leaf sequential patterns
-            if (newS0 and newS1):
+            if newS0 and newS1:
                 leafNodes.append(newS0)
                 leafNodes.append(newS1)
             # print("-------------------------")
         return leafNodes
     # ------------------------------------------------------------------------------------
-    def getNodePos(self, node):
-        return self.nodosListID.index(node)+(self.numTopic*(self.palabrasNecesarias+1))
+    # def getNodePos(self, node):
+    #     return self.nodosListID.index(node)+(self.numTopic*(self.palabrasNecesarias+1))
     # ------------------------------------------------------------------------------------
     def getData(self):
         nodos = self.getNodes()
